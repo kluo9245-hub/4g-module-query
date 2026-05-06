@@ -62,7 +62,39 @@ body {
 .empty-state { text-align:center; padding:60px 20px; color:white; }
 .empty-state-icon { font-size:80px; margin-bottom:20px; opacity:.8; }
 .empty-state-text { font-size:1.3em; opacity:.9; }
-@media(max-width:768px) { .header h1{font-size:1.8em} .search-box{flex-direction:column} .search-btn{width:100%} .bands-grid{grid-template-columns:1fr} }
+@media(max-width:768px) {
+    body { padding:10px; }
+    .header h1{font-size:1.5em}
+    .search-section { padding:15px; }
+    .input-wrapper { min-width:100%; }
+    .search-input { padding:14px 16px; font-size:16px; }
+    .search-box{flex-direction:column; align-items:stretch; }
+    .search-btn{width:100%; padding:14px 20px; font-size:16px; }
+    .bands-grid{grid-template-columns:1fr; gap:10px;}
+    .band-group { padding:12px; }
+    .country-card { padding:15px; border-radius:12px; margin-bottom:15px; }
+    .country-header { flex-direction:column; align-items:flex-start; gap:8px; padding-bottom:12px; }
+    .country-name { font-size:1.3em; white-space:nowrap; }
+    .country-meta { width:100%; }
+    .badge { font-size:12px; padding:4px 10px; }
+    .rec-title { font-size:1.1em; }
+    .module-card { padding:15px; margin-bottom:12px; }
+    .module-priority { width:30px; height:30px; font-size:13px; top:-8px; left:-8px; }
+    .module-header { margin-left:38px; flex-direction:column; gap:6px; align-items:flex-start; }
+    .module-name { font-size:1.05em; }
+    .assessment-box { padding:12px; margin-top:15px; }
+    .assessment-text { font-size:13px; }
+    .tools-bar { padding:12px; flex-direction:column; align-items:stretch; }
+    .tool-btn { justify-content:center; padding:10px 16px; }
+    .stats { margin-left:0; text-align:center; margin-top:8px; }
+    .tag { font-size:12px; padding:5px 10px; }
+    .band-tags { gap:6px; }
+}
+@media(max-width:480px) {
+    .header h1{font-size:1.2em}
+    .header p{font-size:.9em}
+    .country-name { font-size:1.2em; }
+}
 </style>
 </head>
 <body>
