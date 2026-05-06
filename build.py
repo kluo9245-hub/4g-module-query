@@ -158,9 +158,7 @@ def build():
             'name': name,
             'region': country_info[1] if len(country_info) > 1 else '',
             'bands': parse_bands_str(country_info[2]) if len(country_info) > 2 else {},
-            'signal_score': country_info[3] if len(country_info) > 3 else '',
-            'risk_level': country_info[4] if len(country_info) > 4 else '',
-            'assessment': country_info[5] if len(country_info) > 5 else '',
+            'assessment': country_info[3] if len(country_info) > 3 else '',
             'supported_by': [],
             'modules_available': {}
         }
