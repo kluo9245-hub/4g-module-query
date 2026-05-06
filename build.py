@@ -38,7 +38,7 @@ MODULES = {
     'L610-CN': {
         'name': 'L610-CN',
         'short_name': 'L610-CN',
-        'bands': {'FDD': ['B1', 'B3', 'B5', 'B8'], 'TDD': ['B34', 'B38', 'B39', 'B40', 'B41']},
+        'bands': {'FDD': ['B1', 'B3', 'B5', 'B8'], 'TDD': ['B34', 'B39', 'B40', 'B41']},
         'has_gsm': False,
         'priority': 95,
         'region': '亚太/中东/非洲/大洋洲',
@@ -47,7 +47,7 @@ MODULES = {
     'EU': {
         'name': 'L610-EU (支持GSM) / LE270-EU (不支持GSM)',
         'short_name': 'EU版',
-        'bands': {'FDD': ['B1', 'B3', 'B7', 'B8', 'B20']},
+        'bands': {'FDD': ['B1', 'B3', 'B7', 'B8', 'B20', 'B28']},
         'has_gsm': True,
         'priority': 90,
         'region': '欧洲/东欧/中东/非洲',
@@ -56,16 +56,16 @@ MODULES = {
     'LA': {
         'name': 'L610-LA',
         'short_name': 'LA拉美版',
-        'bands': {'FDD': ['B1', 'B2', 'B4', 'B5', 'B8'], 'TDD': ['B38', 'B40', 'B41'], 'WCDMA': ['B1', 'B2', 'B4', 'B5']},
+        'bands': {'FDD': ['B1', 'B2', 'B3', 'B4', 'B5', 'B7', 'B8', 'B28', 'B66'], 'TDD': ['B38', 'B40', 'B41']},
         'has_gsm': True,
         'priority': 85,
         'region': '北美/拉丁美洲',
-        'note': '支持GSM四频+WCDMA，适合北美和拉美'
+        'note': '支持GSM四频，适合北美和拉美'
     },
     'GL': {
         'name': 'LE270-GL',
         'short_name': 'GL全球版',
-        'bands': {'FDD': ['B1','B2','B3','B4','B5','B7','B8','B12','B13','B17','B20','B25','B26','B28','B66'],
+        'bands': {'FDD': ['B1','B2','B3','B4','B5','B7','B8','B12','B13','B14','B17','B18','B19','B20','B25','B26','B28','B66'],
                   'TDD': ['B34','B38','B39','B40','B41']},
         'has_gsm': False,
         'priority': 80,
