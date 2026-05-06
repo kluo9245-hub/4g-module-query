@@ -252,16 +252,41 @@ function mc(m, p) {
     '</div>';
 }
 
+// 获取一个模块对某个国家4G频段的覆盖数
+function getLteCoverageCount(module, country) {
+    var count = 0;
+    if (!module.bands || !country.bands) return 0;
+    // 收集国家所有LTE频段（FDD+TDD）
+    var countryLte = [];
+    (country.bands.FDD || []).forEach(function(b) { countryLte.push(b); });
+    (country.bands.TDD || []).forEach(function(b) { countryLte.push(b); });
+    // 收集模块所有LTE频段
+    var moduleLte = [];
+    (module.bands.FDD || []).forEach(function(b) { moduleLte.push(b); });
+    (module.bands.TDD || []).forEach(function(b) { moduleLte.push(b); });
+    // 计算覆盖数
+    countryLte.forEach(function(cb) {
+        if (moduleLte.indexOf(cb) !== -1) count++;
+    });
+    return count;
+}
+
 function getRecs(c) {
     if (!c.modules_available) return [];
-    return Object.values(c.modules_available).sort(function(a, b) {
-        // 优先级高的排前面
-        var diff = (b.priority || 0) - (a.priority || 0);
-        if (diff !== 0) return diff;
-        // 优先级相同时，支持GSM的排前面
-        if (b.has_gsm !== a.has_gsm) return b.has_gsm ? 1 : -1;
-        return 0;
+    var mods = Object.values(c.modules_available);
+    mods.sort(function(a, b) {
+        // 第一排序：覆盖该国的4G LTE频段数量多的排前面
+        var ca = getLteCoverageCount(a, c);
+        var cb = getLteCoverageCount(b, c);
+        if (ca !== cb) return cb - ca;
+        // 第二排序：覆盖数相同时，支持GSM的排前面
+        if ((a.has_gsm || false) !== (b.has_gsm || false)) {
+            return (b.has_gsm || false) ? 1 : -1;
+        }
+        // 第三排序：都相同则按原始priority
+        return (b.priority || 0) - (a.priority || 0);
     });
+    return mods;
 }
 
 function showWelcome() {
