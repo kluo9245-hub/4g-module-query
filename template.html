@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4G模块国家查询选型工具</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+    font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+    background: linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+    min-height:100vh; padding:20px;
+}
+.container { max-width:1200px; margin:0 auto; }
+.header { text-align:center; color:white; margin-bottom:30px; }
+.header h1 { font-size:2.5em; margin-bottom:10px; text-shadow:2px 2px 4px rgba(0,0,0,.3); }
+.header p { opacity:.9; font-size:1.1em; }
+.search-section { background:white; border-radius:15px; padding:30px; box-shadow:0 10px 40px rgba(0,0,0,.2); margin-bottom:30px; }
+.search-box { display:flex; gap:15px; align-items:center; flex-wrap:wrap; }
+.input-wrapper { flex:1; min-width:300px; position:relative; }
+.search-input { width:100%; padding:18px 25px; font-size:16px; border:2px solid #e0e0e0; border-radius:10px; outline:none; transition:all .3s; }
+.search-input:focus { border-color:#667eea; box-shadow:0 5px 20px rgba(102,126,234,.2); }
+.search-btn { padding:18px 40px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white; border:none; border-radius:10px; font-size:16px; font-weight:bold; cursor:pointer; transition:transform .2s,box-shadow .2s; }
+.search-btn:hover { transform:translateY(-2px); box-shadow:0 5px 15px rgba(102,126,234,.4); }
+.autocomplete { position:absolute; top:100%; left:0; right:0; background:white; border:1px solid #e0e0e0; border-top:none; border-radius:0 0 10px 10px; max-height:300px; overflow-y:auto; z-index:1000; display:none; box-shadow:0 5px 20px rgba(0,0,0,.1); }
+.autocomplete-item { padding:12px 20px; cursor:pointer; border-bottom:1px solid #f0f0f0; transition:background .2s; }
+.autocomplete-item:hover { background:#f8f9fa; }
+.results { display:grid; gap:20px; }
+.country-card { background:white; border-radius:15px; padding:25px; box-shadow:0 5px 20px rgba(0,0,0,.1); animation:fadeIn .5s ease; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+.country-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:15px; border-bottom:2px solid #f0f0f0; }
+.country-name { font-size:1.8em; font-weight:bold; color:#333; }
+.country-meta { display:flex; gap:15px; align-items:center; flex-wrap:wrap; }
+.badge { padding:6px 12px; border-radius:20px; font-size:14px; font-weight:bold; }
+.badge-region { background:#e3f2fd; color:#1976d2; }
+.badge-risk-low { background:#e8f5e9; color:#388e3c; }
+.badge-risk-medium { background:#fff3e0; color:#f57c00; }
+.badge-signal { background:#fce4ec; color:#c2185b; }
+.bands-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:15px; margin-bottom:25px; }
+.band-group { background:#f8f9fa; border-radius:10px; padding:15px; }
+.band-title { font-weight:bold; color:#555; margin-bottom:10px; font-size:14px; }
+.band-tags { display:flex; flex-wrap:wrap; gap:8px; }
+.tag { background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white; padding:6px 12px; border-radius:6px; font-size:13px; font-weight:500; }
+.recommendations { margin-top:20px; }
+.rec-title { font-size:1.3em; font-weight:bold; color:#333; margin-bottom:15px; display:flex; align-items:center; gap:10px; }
+.module-card { background:linear-gradient(135deg,#f5f7fa 0%,#c3cfe2 100%); border-radius:12px; padding:20px; margin-bottom:15px; border-left:5px solid #667eea; position:relative; transition:transform .2s,box-shadow .2s; }
+.module-card:hover { transform:translateX(5px); box-shadow:0 5px 15px rgba(0,0,0,.1); }
+.module-priority { position:absolute; top:-10px; left:-10px; width:36px; height:36px; background:linear-gradient(135deg,#ff6b6b 0%,#ee5a24 100%); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:14px; box-shadow:0 3px 10px rgba(238,90,36,.3); }
+.module-header { display:flex; justify-content:space-between; align-items:start; margin-bottom:12px; margin-left:45px; }
+.module-name { font-size:1.2em; font-weight:bold; color:#333; }
+.module-gsm-badge { padding:4px 10px; border-radius:12px; font-size:12px; font-weight:bold; }
+.gsm-yes { background:#d4edda; color:#155724; }
+.gsm-no { background:#f8d7da; color:#721c24; }
+.module-note { margin-left:45px; color:#666; font-size:14px; margin-top:8px; }
+.module-adapt-level { margin-left:45px; margin-bottom:8px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.adapt-badge { display:inline-block; padding:4px 12px; border-radius:15px; font-size:13px; font-weight:bold; letter-spacing:0.5px; }
+.adapt-s { background:linear-gradient(135deg,#ffd700 0%,#ffb347 100%); color:#5a3e00; }
+.adapt-ap { background:linear-gradient(135deg,#a8e6cf 0%,#7fcdbb 100%); color:#1b6b3e; }
+.adapt-a { background:linear-gradient(135deg,#88d8b0 0%,#69c9a0 100%); color:#1b5e3e; }
+.adapt-bp { background:linear-gradient(135deg,#b3e5fc 0%,#81d4fa 100%); color:#01579b; }
+.adapt-b { background:linear-gradient(135deg,#ffe0b2 0%,#ffcc80 100%); color:#e65100; }
+.adapt-c { background:linear-gradient(135deg,#ffccbc 0%,#ffab91 100%); color:#bf360c; }
+.adapt-d { background:linear-gradient(135deg,#ef9a9a 0%,#ef5350 100%); color:white; }
+.adapt-detail { font-size:11px; color:#888; }
+.assessment-box { background:#fff9c4; border-left:4px solid #fbc02d; padding:15px; margin-top:20px; border-radius:0 8px 8px 0; }
+.assessment-title { font-weight:bold; color:#f57f17; margin-bottom:8px; }
+.assessment-text { color:#555; line-height:1.6; white-space:pre-line; }
+.tools-bar { background:white; border-radius:15px; padding:20px; box-shadow:0 5px 20px rgba(0,0,0,.1); margin-bottom:30px; display:flex; gap:15px; flex-wrap:wrap; align-items:center; }
+.tool-btn { padding:12px 24px; background:#f0f0f0; border:2px solid #ddd; border-radius:8px; cursor:pointer; font-size:14px; font-weight:500; transition:all .2s; display:flex; align-items:center; gap:8px; }
+.tool-btn:hover { background:#e0e0e0; border-color:#bbb; }
+.stats { color:#666; font-size:14px; margin-left:auto; }
+.empty-state { text-align:center; padding:60px 20px; color:white; }
+.empty-state-icon { font-size:80px; margin-bottom:20px; opacity:.8; }
+.empty-state-text { font-size:1.3em; opacity:.9; }
+@media(max-width:768px) {
+    body { padding:10px; }
+    .header h1{font-size:1.5em}
+    .search-section { padding:15px; }
+    .input-wrapper { min-width:100%; }
+    .search-input { padding:14px 16px; font-size:16px; }
+    .search-box{flex-direction:column; align-items:stretch; }
+    .search-btn{width:100%; padding:14px 20px; font-size:16px; }
+    .bands-grid{grid-template-columns:1fr; gap:10px;}
+    .band-group { padding:12px; }
+    .country-card { padding:15px; border-radius:12px; margin-bottom:15px; }
+    .country-header { flex-direction:column; align-items:flex-start; gap:8px; padding-bottom:12px; }
+    .country-name { font-size:1.3em; white-space:nowrap; }
+    .country-meta { width:100%; }
+    .badge { font-size:12px; padding:4px 10px; }
+    .rec-title { font-size:1.1em; }
+    .module-card { padding:15px; margin-bottom:12px; }
+    .module-priority { width:30px; height:30px; font-size:13px; top:-8px; left:-8px; }
+    .module-header { margin-left:38px; flex-direction:column; gap:6px; align-items:flex-start; }
+    .module-name { font-size:1.05em; }
+    .assessment-box { padding:12px; margin-top:15px; }
+    .assessment-text { font-size:13px; }
+    .tools-bar { padding:12px; flex-direction:column; align-items:stretch; }
+    .tool-btn { justify-content:center; padding:10px 16px; }
+    .stats { margin-left:0; text-align:center; margin-top:8px; }
+    .tag { font-size:12px; padding:5px 10px; }
+    .band-tags { gap:6px; }
+}
+@media(max-width:480px) {
+    .header h1{font-size:1.2em}
+    .header p{font-size:.9em}
+    .country-name { font-size:1.2em; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+<h1>🌍 4G模块国家查询选型工具</h1>
+<p>输入国家或地区名称，快速查询支持的频段并推荐最适合的4G模块</p>
+</div>
+
+<div class="tools-bar">
+<button class="tool-btn" onclick="showAllCountries()">📋 查看所有国家</button>
+<button class="tool-btn" onclick="exportDatabase()">💾 导出数据库</button>
+<span class="stats" id="dbStats">加载中...</span>
+</div>
+
+<div class="search-section">
+<div class="search-box">
+<div class="input-wrapper">
+<input type="text" class="search-input" id="searchInput" placeholder="请输入国家或地区名称（如：日本、巴西、德国...）" autocomplete="off" onkeyup="handleSearchInput(event)">
+<div class="autocomplete" id="autocomplete"></div>
+</div>
+<button class="search-btn" onclick="searchCountry()">🔍 查询</button>
+</div>
+</div>
+
+<div class="results" id="results"></div>
+</div>
+
+<script>
+// ========== 内嵌数据库 ==========
+{{MODULES_PLACEHOLDER}}
+{{COUNTRIES_PLACEHOLDER}}
+
+let currentResults = [];
+document.addEventListener('DOMContentLoaded', initApp);
+
+function initApp() {
+    document.getElementById('dbStats').textContent = '📊 数据库: ' + COUNTRY_DB.length + '个国家/地区 | ' + Object.keys(MODULE_DB).length + '种模块';
+    showWelcome();
+    const si = document.getElementById('searchInput');
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.input-wrapper')) hideAutocomplete();
+    });
+}
+
+function handleSearchInput(e) {
+    var q = e.target.value.trim();
+    if (e.key === 'Enter') { searchCountry(); return; }
+    if (q.length >= 1) showAutocomplete(q);
+    else hideAutocomplete();
+}
+
+function searchCountry() {
+    var q = document.getElementById('searchInput').value.trim();
+    if (!q) return showWelcome();
+    var r = fuzzySearch(q);
+    if (!r.length) showNoResults(q);
+    else { currentResults = r; renderResults(r); }
+}
+
+function fuzzySearch(q) {
+    var ql = q.toLowerCase().normalize('NFKC');
+    return COUNTRY_DB.filter(function(c) {
+        var n = (c.name || '').toLowerCase();
+        var rg = (c.region || '').toLowerCase();
+        return n.indexOf(ql) !== -1 || rg.indexOf(ql) !== -1;
+    }).sort(function(a, b) {
+        var an = (a.name || '').toLowerCase();
+        var bn = (b.name || '').toLowerCase();
+        var ae = (an === ql) ? 0 : (an.indexOf(ql) === 0) ? 1 : 2;
+        var be = (bn === ql) ? 0 : (bn.indexOf(ql) === 0) ? 1 : 2;
+        return ae - be || an.localeCompare(bn, 'zh-CN');
+    });
+}
+
+function showAutocomplete(q) {
+    var r = fuzzySearch(q).slice(0, 10);
+    var el = document.getElementById('autocomplete');
+    if (!r.length) return hideAutocomplete();
+    el.innerHTML = r.map(function(x) {
+        return '<div class="autocomplete-item" onclick="selectCountry(\'' + x.name.replace(/'/g, "\\'") + '\')">🌐 ' + x.name + ' <span style="color:#999;font-size:12px">' + x.region + '</span></div>';
+    }).join('');
+    el.style.display = 'block';
+}
+
+function hideAutocomplete() {
+    document.getElementById('autocomplete').style.display = 'none';
+}
+
+function selectCountry(n) {
+    document.getElementById('searchInput').value = n;
+    hideAutocomplete();
+    searchCountry();
+}
+
+function renderResults(cs) {
+    document.getElementById('results').innerHTML = cs.map(renderCard).join('');
+}
+
+function renderCard(c) {
+    var recs = getRecs(c);
+    var html = '<div class="country-card">';
+    
+    // 国家头部
+    html += '<div class="country-header">';
+    html += '<div><div class="country-name">🌏 ' + escHtml(c.name) + '</div></div>';
+    html += '<div class="country-meta">';
+    html += '<span class="badge badge-region">' + escHtml(c.region) + '</span>';
+    html += '<span class="badge badge-signal">' + escHtml(c.signal_score) + '</span>';
+    html += '</div></div>';
+    
+    // 频段
+    html += '<div class="bands-grid">' + bgHtml(c.bands) + '</div>';
+    
+    // 推荐模块
+    html += '<div class="recommendations"><div class="rec-title">💡 推荐使用的模块（按优先级排序）</div>';
+    recs.forEach(function(m, i) {
+        html += mc(m, i + 1);
+    });
+    html += '</div>';
+    
+    // 综合评估
+    html += '<div class="assessment-box"><div class="assessment-title">📝 综合评估说明</div><div class="assessment-text">' + escHtml(c.assessment) + '</div></div>';
+    
+    html += '</div>';
+    return html;
+}
+
+function bgHtml(b) {
+    if (!b) return '';
+    var types = [['FDD','FDD LTE'],['TDD','TDD LTE'],['WCDMA','WCDMA']];
+    return types.map(function(tup) {
+        var t = tup[0], l = tup[1];
+        var bl = b[t];
+        if (!bl || !bl.length) return '';
+        return '<div class="band-group"><div class="band-title">' + l + '</div><div class="band-tags">' +
+            bl.map(function(band) { return '<span class="tag">' + band + '</span>'; }).join('') +
+            '</div></div>';
+    }).join('');
+}
+
+// 计算模块对某个国家的适配等级
+function getAdaptationLevel(module, country) {
+    if (!module.bands || !country.bands) return { grade: 'D', label: 'D 不推荐', pct: 0 };
+    // 收集国家所有LTE频段
+    var countryLte = [];
+    (country.bands.FDD || []).forEach(function(b) { countryLte.push(b); });
+    (country.bands.TDD || []).forEach(function(b) { countryLte.push(b); });
+    // 收集模块所有LTE频段
+    var moduleLte = [];
+    (module.bands.FDD || []).forEach(function(b) { moduleLte.push(b); });
+    (module.bands.TDD || []).forEach(function(b) { moduleLte.push(b); });
+    // 计算覆盖率
+    var covered = 0;
+    var total = countryLte.length;
+    if (total === 0) return { grade: 'A', label: 'A 高度适配', pct: 100 }; // 国家无4G频段则默认好
+    countryLte.forEach(function(cb) {
+        if (moduleLte.indexOf(cb) !== -1) covered++;
+    });
+    var pct = Math.round(covered / total * 100);
+    var hasGsm = module.has_gsm || false;
+
+    // 等级判定逻辑
+    if (pct === 100 && hasGsm)
+        return { grade: 'S', label: 'S 完美适配', pct: pct, detail: '100%覆盖 + GSM' };
+    if (pct === 100 && !hasGsm)
+        return { grade: 'A+', label: 'A+ 极佳适配', pct: pct, detail: '100%覆盖' };
+    if (pct >= 80 && hasGsm)
+        return { grade: 'A', label: 'A 高度适配', pct: pct, detail: pct + '%覆盖 + GSM' };
+    if ((pct >= 80 && !hasGsm) || (pct >= 60 && hasGsm))
+        return { grade: 'B+', label: 'B+ 良好适配', pct: pct, detail: pct + '%' + (hasGsm ? '+ GSM' : '') };
+    if (pct >= 40)
+        return { grade: 'B', label: 'B 基本可用', pct: pct, detail: pct + '%' };
+    if (pct >= 1)
+        return { grade: 'C', label: 'C 勉强可用', pct: pct, detail: pct + '%' };
+    return { grade: 'D', label: 'D 不推荐', pct: 0, detail: '无覆盖' };
+}
+
+function mc(m, p) {
+    var gc = m.has_gsm ? 'gsm-yes' : 'gsm-no';
+    var gt = m.has_gsm ? '✓ 支持GSM' : '✗ 不支持GSM';
+    var adapt = getAdaptationLevel(m, currentResults[0] || COUNTRY_DB.find(function(c){return c.modules_available && Object.keys(c.modules_available).some(function(k){return c.modules_available[k].name===m.name;})}));
+    var adaptClass = 'adapt-' + adapt.grade.toLowerCase().replace('+','p');
+    return '<div class="module-card">' +
+        '<div class="module-priority">' + p + '</div>' +
+        '<div class="module-adapt-level"><span class="adapt-badge ' + adaptClass + '">' + adapt.label + '</span><span class="adapt-detail">' + (adapt.detail||'') + '</span></div>' +
+        '<div class="module-header"><div>' +
+            '<div class="module-name">' + m.name + '</div>' +
+            '<div style="color:#888;font-size:13px;margin-top:4px">' + m.region + '</div>' +
+        '</div>' +
+        '<span class="module-gsm-badge ' + gc + '">' + gt + '</span></div>' +
+        '<div class="bands-grid" style="margin:10px 0 0 45px">' + bgHtml(m.bands) + '</div>' +
+        '<div class="module-note">💬 ' + m.note + '</div>' +
+    '</div>';
+}
+
+// 获取一个模块对某个国家4G频段的覆盖数
+function getLteCoverageCount(module, country) {
+    var count = 0;
+    if (!module.bands || !country.bands) return 0;
+    // 收集国家所有LTE频段（FDD+TDD）
+    var countryLte = [];
+    (country.bands.FDD || []).forEach(function(b) { countryLte.push(b); });
+    (country.bands.TDD || []).forEach(function(b) { countryLte.push(b); });
+    // 收集模块所有LTE频段
+    var moduleLte = [];
+    (module.bands.FDD || []).forEach(function(b) { moduleLte.push(b); });
+    (module.bands.TDD || []).forEach(function(b) { moduleLte.push(b); });
+    // 计算覆盖数
+    countryLte.forEach(function(cb) {
+        if (moduleLte.indexOf(cb) !== -1) count++;
+    });
+    return count;
+}
+
+function getRecs(c) {
+    if (!c.modules_available) return [];
+    var mods = Object.values(c.modules_available);
+    mods.sort(function(a, b) {
+        // 第一排序：覆盖该国的4G LTE频段数量多的排前面
+        var ca = getLteCoverageCount(a, c);
+        var cb = getLteCoverageCount(b, c);
+        if (ca !== cb) return cb - ca;
+        // 第二排序：覆盖数相同时，支持GSM的排前面
+        if ((a.has_gsm || false) !== (b.has_gsm || false)) {
+            return (b.has_gsm || false) ? 1 : -1;
+        }
+        // 第三排序：都相同则按原始priority
+        return (b.priority || 0) - (a.priority || 0);
+    });
+    return mods;
+}
+
+function showWelcome() {
+    document.getElementById('results').innerHTML =
+        '<div class="empty-state"><div class="empty-state-icon">🔍</div>' +
+        '<div class="empty-state-text">输入国家或地区名称开始查询<br><small style="opacity:.7">支持中文模糊搜索</small></div></div>';
+}
+
+function showNoResults(q) {
+    document.getElementById('results').innerHTML =
+        '<div class="empty-state"><div class="empty-state-icon">😕</div>' +
+        '<div class="empty-state-text">未找到 "' + escHtml(q) + '" 相关结果<br><small style="opacity:.7">请尝试其他关键词</small></div></div>';
+}
+
+function showAllCountries() {
+    currentResults = COUNTRY_DB.slice().sort(function(a, b) {
+        return a.name.localeCompare(b.name, 'zh-CN');
+    });
+    renderResults(currentResults);
+}
+
+function exportDatabase() {
+    var s = JSON.stringify({ COUNTRY_DB: COUNTRY_DB, MODULE_DB: MODULE_DB }, null, 2);
+    var blob = new Blob([s], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = '4g_module_database.json';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function rc(r) {
+    switch ((r || '').toLowerCase()) {
+        case '低': return 'low';
+        case '中': return 'medium';
+        case '高': return 'high';
+        default: return 'low';
+    }
+}
+
+function escHtml(t) {
+    if (!t) return '';
+    var d = document.createElement('div');
+    d.textContent = t;
+    return d.innerHTML;
+}
+</script>
+</body>
+</html>

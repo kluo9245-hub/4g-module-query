@@ -52,6 +52,16 @@ body {
 .gsm-yes { background:#d4edda; color:#155724; }
 .gsm-no { background:#f8d7da; color:#721c24; }
 .module-note { margin-left:45px; color:#666; font-size:14px; margin-top:8px; }
+.module-adapt-level { margin-left:45px; margin-bottom:8px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.adapt-badge { display:inline-block; padding:4px 12px; border-radius:15px; font-size:13px; font-weight:bold; letter-spacing:0.5px; }
+.adapt-s { background:linear-gradient(135deg,#ffd700 0%,#ffb347 100%); color:#5a3e00; }
+.adapt-ap { background:linear-gradient(135deg,#a8e6cf 0%,#7fcdbb 100%); color:#1b6b3e; }
+.adapt-a { background:linear-gradient(135deg,#88d8b0 0%,#69c9a0 100%); color:#1b5e3e; }
+.adapt-bp { background:linear-gradient(135deg,#b3e5fc 0%,#81d4fa 100%); color:#01579b; }
+.adapt-b { background:linear-gradient(135deg,#ffe0b2 0%,#ffcc80 100%); color:#e65100; }
+.adapt-c { background:linear-gradient(135deg,#ffccbc 0%,#ffab91 100%); color:#bf360c; }
+.adapt-d { background:linear-gradient(135deg,#ef9a9a 0%,#ef5350 100%); color:white; }
+.adapt-detail { font-size:11px; color:#888; }
 .assessment-box { background:#fff9c4; border-left:4px solid #fbc02d; padding:15px; margin-top:20px; border-radius:0 8px 8px 0; }
 .assessment-title { font-weight:bold; color:#f57f17; margin-bottom:8px; }
 .assessment-text { color:#555; line-height:1.6; white-space:pre-line; }
@@ -204,7 +214,6 @@ function renderCard(c) {
     html += '<div class="country-meta">';
     html += '<span class="badge badge-region">' + escHtml(c.region) + '</span>';
     html += '<span class="badge badge-signal">' + escHtml(c.signal_score) + '</span>';
-    html += '<span class="badge badge-risk-' + rc(c.risk_level) + '">风险:' + escHtml(c.risk_level) + '</span>';
     html += '</div></div>';
     
     // 频段
@@ -237,11 +246,51 @@ function bgHtml(b) {
     }).join('');
 }
 
+// 计算模块对某个国家的适配等级
+function getAdaptationLevel(module, country) {
+    if (!module.bands || !country.bands) return { grade: 'D', label: 'D 不推荐', pct: 0 };
+    // 收集国家所有LTE频段
+    var countryLte = [];
+    (country.bands.FDD || []).forEach(function(b) { countryLte.push(b); });
+    (country.bands.TDD || []).forEach(function(b) { countryLte.push(b); });
+    // 收集模块所有LTE频段
+    var moduleLte = [];
+    (module.bands.FDD || []).forEach(function(b) { moduleLte.push(b); });
+    (module.bands.TDD || []).forEach(function(b) { moduleLte.push(b); });
+    // 计算覆盖率
+    var covered = 0;
+    var total = countryLte.length;
+    if (total === 0) return { grade: 'A', label: 'A 高度适配', pct: 100 }; // 国家无4G频段则默认好
+    countryLte.forEach(function(cb) {
+        if (moduleLte.indexOf(cb) !== -1) covered++;
+    });
+    var pct = Math.round(covered / total * 100);
+    var hasGsm = module.has_gsm || false;
+
+    // 等级判定逻辑
+    if (pct === 100 && hasGsm)
+        return { grade: 'S', label: 'S 完美适配', pct: pct, detail: '100%覆盖 + GSM' };
+    if (pct === 100 && !hasGsm)
+        return { grade: 'A+', label: 'A+ 极佳适配', pct: pct, detail: '100%覆盖' };
+    if (pct >= 80 && hasGsm)
+        return { grade: 'A', label: 'A 高度适配', pct: pct, detail: pct + '%覆盖 + GSM' };
+    if ((pct >= 80 && !hasGsm) || (pct >= 60 && hasGsm))
+        return { grade: 'B+', label: 'B+ 良好适配', pct: pct, detail: pct + '%' + (hasGsm ? '+ GSM' : '') };
+    if (pct >= 40)
+        return { grade: 'B', label: 'B 基本可用', pct: pct, detail: pct + '%' };
+    if (pct >= 1)
+        return { grade: 'C', label: 'C 勉强可用', pct: pct, detail: pct + '%' };
+    return { grade: 'D', label: 'D 不推荐', pct: 0, detail: '无覆盖' };
+}
+
 function mc(m, p) {
     var gc = m.has_gsm ? 'gsm-yes' : 'gsm-no';
     var gt = m.has_gsm ? '✓ 支持GSM' : '✗ 不支持GSM';
+    var adapt = getAdaptationLevel(m, currentResults[0] || COUNTRY_DB.find(function(c){return c.modules_available && Object.keys(c.modules_available).some(function(k){return c.modules_available[k].name===m.name;})}));
+    var adaptClass = 'adapt-' + adapt.grade.toLowerCase().replace('+','p');
     return '<div class="module-card">' +
         '<div class="module-priority">' + p + '</div>' +
+        '<div class="module-adapt-level"><span class="adapt-badge ' + adaptClass + '">' + adapt.label + '</span><span class="adapt-detail">' + (adapt.detail||'') + '</span></div>' +
         '<div class="module-header"><div>' +
             '<div class="module-name">' + m.name + '</div>' +
             '<div style="color:#888;font-size:13px;margin-top:4px">' + m.region + '</div>' +
