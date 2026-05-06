@@ -255,7 +255,12 @@ function mc(m, p) {
 function getRecs(c) {
     if (!c.modules_available) return [];
     return Object.values(c.modules_available).sort(function(a, b) {
-        return (b.priority || 0) - (a.priority || 0);
+        // 优先级高的排前面
+        var diff = (b.priority || 0) - (a.priority || 0);
+        if (diff !== 0) return diff;
+        // 优先级相同时，支持GSM的排前面
+        if (b.has_gsm !== a.has_gsm) return b.has_gsm ? 1 : -1;
+        return 0;
     });
 }
 
