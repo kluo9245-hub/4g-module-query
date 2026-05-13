@@ -33,7 +33,8 @@ MODULES = {
         'has_gsm': False,
         'priority': 100,
         'region': '亚太/中东/非洲/大洋洲',
-        'note': '不支持GSM，适合亚太地区'
+        'note': '不支持GSM，适合亚太地区',
+        'projects': {'MC669-CN': ['WD-219G'], 'LE270-CN': ['WD-300', 'WD-210', 'WD-218', 'WD-219K'], 'ML307N-DC-DL': ['WD-110', 'WD-281', 'WD-282', 'MW-100', 'WD-280D']}
     },
     'L610-CN': {
         'name': 'L610-CN',
@@ -42,7 +43,8 @@ MODULES = {
         'has_gsm': False,
         'priority': 95,
         'region': '亚太/中东/非洲/大洋洲',
-        'note': '不支持GSM，适合亚太地区'
+        'note': '不支持GSM，适合亚太地区',
+        'projects': ['WD-325B']
     },
     'EU': {
         'name': 'L610-EU (支持GSM) / LE270-EU (不支持GSM)',
@@ -51,7 +53,8 @@ MODULES = {
         'has_gsm': True,
         'priority': 90,
         'region': '欧洲/东欧/中东/非洲',
-        'note': 'L610-EU额外支持GSM'
+        'note': 'L610-EU额外支持GSM',
+        'projects': ['WD-325B']
     },
     'LA': {
         'name': 'L610-LA',
@@ -60,7 +63,8 @@ MODULES = {
         'has_gsm': True,
         'priority': 85,
         'region': '北美/拉丁美洲',
-        'note': '支持GSM四频，适合北美和拉美'
+        'note': '支持GSM四频，适合北美和拉美',
+        'projects': ['WD-325B']
     },
     'GL': {
         'name': 'LE271-GL',
@@ -70,7 +74,8 @@ MODULES = {
         'has_gsm': False,
         'priority': 80,
         'region': '全球',
-        'note': '全球频段覆盖最广，成本较高'
+        'note': '全球频段覆盖最广，成本较高',
+        'projects': ['WD-300', 'WD-210', 'WD-219K']
     }
 }
 

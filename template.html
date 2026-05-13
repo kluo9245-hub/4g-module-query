@@ -52,6 +52,8 @@ body {
 .gsm-yes { background:#d4edda; color:#155724; }
 .gsm-no { background:#f8d7da; color:#721c24; }
 .module-note { margin-left:45px; color:#666; font-size:14px; margin-top:8px; }
+.module-projects { margin-left:45px; color:#555; font-size:13px; margin-top:6px; }
+.project-tag { display:inline-block; background:#e8f5e9; color:#2e7d32; padding:3px 10px; border-radius:12px; font-size:12px; font-weight:bold; margin:2px 3px 2px 0; }
 .module-adapt-level { margin-left:45px; margin-bottom:8px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .adapt-badge { display:inline-block; padding:4px 12px; border-radius:15px; font-size:13px; font-weight:bold; letter-spacing:0.5px; }
 .adapt-s { background:linear-gradient(135deg,#ffd700 0%,#ffb347 100%); color:#5a3e00; }
@@ -287,6 +289,14 @@ function mc(m, p) {
     var gt = m.has_gsm ? '✓ 支持GSM' : '✗ 不支持GSM';
     var adapt = getAdaptationLevel(m, currentResults[0] || COUNTRY_DB.find(function(c){return c.modules_available && Object.keys(c.modules_available).some(function(k){return c.modules_available[k].name===m.name;})}));
     var adaptClass = 'adapt-' + adapt.grade.toLowerCase().replace('+','p');
+    // 构建项目标签HTML
+    var projectsHtml = '';
+    if (m.projects) {
+        var projList = Array.isArray(m.projects) ? m.projects : Object.values(m.projects).flat();
+        if (projList.length > 0) {
+            projectsHtml = '<div class="module-projects">📌 使用项目：' + projList.map(function(pj){ return '<span class="project-tag">' + pj + '</span>'; }).join('') + '</div>';
+        }
+    }
     return '<div class="module-card">' +
         '<div class="module-priority">' + p + '</div>' +
         '<div class="module-adapt-level"><span class="adapt-badge ' + adaptClass + '">' + adapt.label + '</span><span class="adapt-detail">' + (adapt.detail||'') + '</span></div>' +
@@ -296,6 +306,7 @@ function mc(m, p) {
         '</div>' +
         '<span class="module-gsm-badge ' + gc + '">' + gt + '</span></div>' +
         '<div class="bands-grid" style="margin:10px 0 0 45px">' + bgHtml(m.bands) + '</div>' +
+        projectsHtml +
         '<div class="module-note">💬 ' + m.note + '</div>' +
     '</div>';
 }
