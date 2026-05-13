@@ -289,12 +289,26 @@ function mc(m, p) {
     var gt = m.has_gsm ? '✓ 支持GSM' : '✗ 不支持GSM';
     var adapt = getAdaptationLevel(m, currentResults[0] || COUNTRY_DB.find(function(c){return c.modules_available && Object.keys(c.modules_available).some(function(k){return c.modules_available[k].name===m.name;})}));
     var adaptClass = 'adapt-' + adapt.grade.toLowerCase().replace('+','p');
-    // 构建项目标签HTML
+    // 构建项目标签HTML（支持list和dict两种格式，dict按子模块分组展示）
     var projectsHtml = '';
     if (m.projects) {
-        var projList = Array.isArray(m.projects) ? m.projects : Object.values(m.projects).flat();
-        if (projList.length > 0) {
-            projectsHtml = '<div class="module-projects">📌 使用项目：' + projList.map(function(pj){ return '<span class="project-tag">' + pj + '</span>'; }).join('') + '</div>';
+        if (Array.isArray(m.projects)) {
+            // 简单数组格式：直接展示
+            if (m.projects.length > 0) {
+                projectsHtml = '<div class="module-projects">📌 使用产品型号：' + m.projects.map(function(pj){ return '<span class="project-tag">' + pj + '</span>'; }).join('') + '</div>';
+            }
+        } else {
+            // dict格式（如EU版）：按子模块型号分组展示
+            var groups = [];
+            for (var subModel in m.projects) {
+                if (m.projects.hasOwnProperty(subModel)) {
+                    var tags = m.projects[subModel].map(function(pj){ return '<span class="project-tag">' + pj + '</span>'; }).join('');
+                    groups.push('<b>' + subModel + '</b>：' + tags);
+                }
+            }
+            if (groups.length > 0) {
+                projectsHtml = '<div class="module-projects">📌 使用产品型号：' + groups.join(' / ') + '</div>';
+            }
         }
     }
     return '<div class="module-card">' +

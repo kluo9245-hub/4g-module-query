@@ -54,7 +54,7 @@ MODULES = {
         'priority': 90,
         'region': '欧洲/东欧/中东/非洲',
         'note': 'L610-EU额外支持GSM',
-        'projects': ['WD-325B']
+        'projects': {'L610-EU': ['WD-325B'], 'LE270-EU': ['WD-300', 'WD-210', 'WD-219K']}
     },
     'LA': {
         'name': 'L610-LA',
