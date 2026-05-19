@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>4G模块国家查询选型工具</title>
+<title>TBIT产品适配国家选型工具</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
@@ -15,7 +15,17 @@ body {
 .header { text-align:center; color:white; margin-bottom:30px; }
 .header h1 { font-size:2.5em; margin-bottom:10px; text-shadow:2px 2px 4px rgba(0,0,0,.3); }
 .header p { opacity:.9; font-size:1.1em; }
-.search-section { background:white; border-radius:15px; padding:30px; box-shadow:0 10px 40px rgba(0,0,0,.2); margin-bottom:30px; }
+
+/* 工具栏 */
+.tools-bar { background:white; border-radius:15px; padding:20px; box-shadow:0 5px 20px rgba(0,0,0,.1); margin-bottom:20px; display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+.tool-btn { padding:10px 20px; background:#f0f0f0; border:2px solid #ddd; border-radius:8px; cursor:pointer; font-size:14px; font-weight:500; transition:all .2s; display:flex; align-items:center; gap:8px; }
+.tool-btn:hover { background:#e0e0e0; border-color:#bbb; }
+.tool-btn.primary { background:linear-gradient(135deg,#667eea,#764ba2); color:white; border-color:transparent; }
+.tool-btn.primary:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(102,126,234,.4); }
+.stats { color:#666; font-size:14px; margin-left:auto; }
+
+/* 搜索 */
+.search-section { background:white; border-radius:15px; padding:30px; box-shadow:0 10px 40px rgba(0,0,0,.2); margin-bottom:25px; }
 .search-box { display:flex; gap:15px; align-items:center; flex-wrap:wrap; }
 .input-wrapper { flex:1; min-width:300px; position:relative; }
 .search-input { width:100%; padding:18px 25px; font-size:16px; border:2px solid #e0e0e0; border-radius:10px; outline:none; transition:all .3s; }
@@ -25,111 +35,259 @@ body {
 .autocomplete { position:absolute; top:100%; left:0; right:0; background:white; border:1px solid #e0e0e0; border-top:none; border-radius:0 0 10px 10px; max-height:300px; overflow-y:auto; z-index:1000; display:none; box-shadow:0 5px 20px rgba(0,0,0,.1); }
 .autocomplete-item { padding:12px 20px; cursor:pointer; border-bottom:1px solid #f0f0f0; transition:background .2s; }
 .autocomplete-item:hover { background:#f8f9fa; }
+
+/* 结果区 */
 .results { display:grid; gap:20px; }
 .country-card { background:white; border-radius:15px; padding:25px; box-shadow:0 5px 20px rgba(0,0,0,.1); animation:fadeIn .5s ease; }
 @keyframes fadeIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-.country-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:15px; border-bottom:2px solid #f0f0f0; }
+.country-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:15px; border-bottom:2px solid #f0f0f0; flex-wrap:wrap; gap:10px; }
 .country-name { font-size:1.8em; font-weight:bold; color:#333; }
-.country-meta { display:flex; gap:15px; align-items:center; flex-wrap:wrap; }
 .badge { padding:6px 12px; border-radius:20px; font-size:14px; font-weight:bold; }
 .badge-region { background:#e3f2fd; color:#1976d2; }
-.badge-risk-low { background:#e8f5e9; color:#388e3c; }
-.badge-risk-medium { background:#fff3e0; color:#f57c00; }
-.badge-signal { background:#fce4ec; color:#c2185b; }
-.bands-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:15px; margin-bottom:25px; }
-.band-group { background:#f8f9fa; border-radius:10px; padding:15px; }
-.band-title { font-weight:bold; color:#555; margin-bottom:10px; font-size:14px; }
-.band-tags { display:flex; flex-wrap:wrap; gap:8px; }
-.tag { background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white; padding:6px 12px; border-radius:6px; font-size:13px; font-weight:500; }
-.recommendations { margin-top:20px; }
-.rec-title { font-size:1.3em; font-weight:bold; color:#333; margin-bottom:15px; display:flex; align-items:center; gap:10px; }
-.module-card { background:linear-gradient(135deg,#f5f7fa 0%,#c3cfe2 100%); border-radius:12px; padding:20px; margin-bottom:15px; border-left:5px solid #667eea; position:relative; transition:transform .2s,box-shadow .2s; }
-.module-card:hover { transform:translateX(5px); box-shadow:0 5px 15px rgba(0,0,0,.1); }
-.module-priority { position:absolute; top:-10px; left:-10px; width:36px; height:36px; background:linear-gradient(135deg,#ff6b6b 0%,#ee5a24 100%); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:14px; box-shadow:0 3px 10px rgba(238,90,36,.3); }
-.module-header { display:flex; justify-content:space-between; align-items:start; margin-bottom:12px; margin-left:45px; }
-.module-name { font-size:1.2em; font-weight:bold; color:#333; }
-.module-gsm-badge { padding:4px 10px; border-radius:12px; font-size:12px; font-weight:bold; }
-.gsm-yes { background:#d4edda; color:#155724; }
-.gsm-no { background:#f8d7da; color:#721c24; }
-.module-note { margin-left:45px; color:#666; font-size:14px; margin-top:8px; }
-.module-projects { margin-left:45px; color:#555; font-size:13px; margin-top:6px; }
-.project-tag { display:inline-block; background:#e8f5e9; color:#2e7d32; padding:3px 10px; border-radius:12px; font-size:12px; font-weight:bold; margin:2px 3px 2px 0; }
-.module-adapt-level { margin-left:45px; margin-bottom:8px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-.adapt-badge { display:inline-block; padding:4px 12px; border-radius:15px; font-size:13px; font-weight:bold; letter-spacing:0.5px; }
-.adapt-s { background:linear-gradient(135deg,#ffd700 0%,#ffb347 100%); color:#5a3e00; }
-.adapt-ap { background:linear-gradient(135deg,#a8e6cf 0%,#7fcdbb 100%); color:#1b6b3e; }
-.adapt-a { background:linear-gradient(135deg,#88d8b0 0%,#69c9a0 100%); color:#1b5e3e; }
-.adapt-bp { background:linear-gradient(135deg,#b3e5fc 0%,#81d4fa 100%); color:#01579b; }
-.adapt-b { background:linear-gradient(135deg,#ffe0b2 0%,#ffcc80 100%); color:#e65100; }
-.adapt-c { background:linear-gradient(135deg,#ffccbc 0%,#ffab91 100%); color:#bf360c; }
-.adapt-d { background:linear-gradient(135deg,#ef9a9a 0%,#ef5350 100%); color:white; }
+.bands-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; margin-bottom:20px; }
+.band-group { background:#f8f9fa; border-radius:10px; padding:14px; }
+.band-title { font-weight:bold; color:#555; margin-bottom:8px; font-size:13px; }
+.band-tags { display:flex; flex-wrap:wrap; gap:6px; }
+.tag { background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white; padding:5px 10px; border-radius:6px; font-size:12px; font-weight:500; }
+
+/* 推荐区域 - 产品为主体 */
+.recommendations { margin-top:15px; }
+.category-section { margin-bottom:20px; }
+.category-title {
+    font-size:1.1em; font-weight:bold; color:white;
+    padding:8px 18px; border-radius:20px; display:inline-flex;
+    align-items:center; gap:8px; margin-bottom:12px;
+}
+.cat-shared { background:linear-gradient(135deg,#43a047,#66bb6a); }
+.cat-twowheels { background:linear-gradient(135deg,#1e88e5,#42a5f5); }
+
+/* 产品卡片 */
+.product-card {
+    background:#f8f9fa; border-radius:12px; padding:16px 18px;
+    margin-bottom:10px; border-left:4px solid #667eea;
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+    transition:transform .15s, box-shadow .15s;
+    cursor:default;
+}
+.product-card:hover { transform:translateX(4px); box-shadow:0 4px 12px rgba(0,0,0,.1); }
+.product-rank {
+    min-width:32px; height:32px; background:linear-gradient(135deg,#ff6b6b,#ee5a24);
+    color:white; border-radius:50%; display:flex; align-items:center;
+    justify-content:center; font-weight:bold; font-size:13px; flex-shrink:0;
+}
+.product-main { flex:1; min-width:180px; }
+.product-name { font-size:1.15em; font-weight:bold; color:#222; }
+.product-module { color:#555; font-size:13px; margin-top:3px; }
+.product-module .mod-chip {
+    display:inline-block; background:#e3f2fd; color:#1565c0;
+    padding:2px 9px; border-radius:10px; font-weight:600; font-size:12px; margin:2px 3px 0 0;
+}
+.product-adapt { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.adapt-badge { display:inline-block; padding:4px 12px; border-radius:15px; font-size:13px; font-weight:bold; letter-spacing:.4px; }
+.adapt-s  { background:linear-gradient(135deg,#ffd700,#ffb347); color:#5a3e00; }
+.adapt-ap { background:linear-gradient(135deg,#a8e6cf,#7fcdbb); color:#1b6b3e; }
+.adapt-a  { background:linear-gradient(135deg,#88d8b0,#69c9a0); color:#1b5e3e; }
+.adapt-bp { background:linear-gradient(135deg,#b3e5fc,#81d4fa); color:#01579b; }
+.adapt-b  { background:linear-gradient(135deg,#ffe0b2,#ffcc80); color:#e65100; }
+.adapt-c  { background:linear-gradient(135deg,#ffccbc,#ffab91); color:#bf360c; }
+.adapt-d  { background:linear-gradient(135deg,#ef9a9a,#ef5350); color:white; }
 .adapt-detail { font-size:11px; color:#888; }
+.product-gsm { font-size:11px; padding:2px 8px; border-radius:10px; font-weight:bold; }
+.gsm-yes { background:#d4edda; color:#155724; }
+.gsm-no  { background:#f8d7da; color:#721c24; }
+
+/* 多模块展示（可展开） */
+.more-modules { margin-left:46px; margin-bottom:6px; }
+.more-modules-toggle { color:#1976d2; font-size:12px; cursor:pointer; text-decoration:underline; }
+.more-modules-list { display:none; margin-top:6px; }
+.more-modules-list.open { display:block; }
+.sub-module-row { display:flex; align-items:center; gap:10px; padding:6px 10px; background:#fff; border-radius:8px; margin-bottom:5px; flex-wrap:wrap; }
+.sub-mod-name { font-weight:600; font-size:12px; color:#333; min-width:100px; }
+.sub-mod-region { font-size:11px; color:#888; }
+/* 模块频段内联显示 */
+.mod-bands-inline {
+    display:inline-block; font-size:11px; color:#546e7a;
+    background:#eceff1; padding:1px 7px; border-radius:8px;
+    margin-left:4px; letter-spacing:.2px; white-space:nowrap;
+}
+.mod-bands-sub {
+    display:block; width:100%; font-size:11px; color:#546e7a;
+    margin-top:2px; padding-left:2px; letter-spacing:.2px;
+}
+
+/* 评估框 */
 .assessment-box { background:#fff9c4; border-left:4px solid #fbc02d; padding:15px; margin-top:20px; border-radius:0 8px 8px 0; }
 .assessment-title { font-weight:bold; color:#f57f17; margin-bottom:8px; }
 .assessment-text { color:#555; line-height:1.6; white-space:pre-line; }
-.tools-bar { background:white; border-radius:15px; padding:20px; box-shadow:0 5px 20px rgba(0,0,0,.1); margin-bottom:30px; display:flex; gap:15px; flex-wrap:wrap; align-items:center; }
-.tool-btn { padding:12px 24px; background:#f0f0f0; border:2px solid #ddd; border-radius:8px; cursor:pointer; font-size:14px; font-weight:500; transition:all .2s; display:flex; align-items:center; gap:8px; }
-.tool-btn:hover { background:#e0e0e0; border-color:#bbb; }
-.stats { color:#666; font-size:14px; margin-left:auto; }
+
 .empty-state { text-align:center; padding:60px 20px; color:white; }
 .empty-state-icon { font-size:80px; margin-bottom:20px; opacity:.8; }
 .empty-state-text { font-size:1.3em; opacity:.9; }
+
+/* ============================================================
+   Excel导入面板
+   ============================================================ */
+.import-panel {
+    background:white; border-radius:15px; padding:30px;
+    box-shadow:0 5px 20px rgba(0,0,0,.15); margin-bottom:25px;
+    display:none;
+}
+.import-panel.open { display:block; animation:fadeIn .3s ease; }
+.import-panel h2 { color:#333; margin-bottom:6px; font-size:1.3em; }
+.import-panel .import-desc { color:#666; font-size:13px; margin-bottom:20px; }
+.import-actions { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:20px; }
+.file-drop-zone {
+    border:2px dashed #ccc; border-radius:10px; padding:30px;
+    text-align:center; color:#888; transition:all .2s; cursor:pointer;
+}
+.file-drop-zone:hover, .file-drop-zone.drag-over { border-color:#667eea; background:#f0f4ff; color:#667eea; }
+.file-drop-zone input[type=file] { display:none; }
+.import-format { background:#f8f9fa; border-radius:10px; padding:16px; margin-bottom:16px; }
+.import-format h3 { font-size:13px; color:#555; margin-bottom:10px; font-weight:600; }
+.format-table { width:100%; border-collapse:collapse; font-size:12px; }
+.format-table th { background:#e8eaf6; padding:7px 10px; text-align:left; color:#333; border:1px solid #ddd; }
+.format-table td { padding:6px 10px; border:1px solid #ddd; color:#555; }
+.format-table tr:nth-child(even) td { background:#f5f5f5; }
+.section-label { display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:bold; }
+.sl-shared { background:#e8f5e9; color:#2e7d32; }
+.sl-twowheels { background:#e3f2fd; color:#1565c0; }
+.import-log { background:#1e1e1e; color:#d4d4d4; border-radius:8px; padding:14px; font-family:Courier,monospace; font-size:12px; max-height:200px; overflow-y:auto; display:none; }
+.import-log.has-content { display:block; }
+.log-ok { color:#4caf50; }
+.log-warn { color:#ff9800; }
+.log-err { color:#f44336; }
+.btn-import { padding:10px 24px; background:linear-gradient(135deg,#43a047,#66bb6a); color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; }
+.btn-import:hover { opacity:.9; }
+.btn-download-template { padding:10px 20px; background:#e3f2fd; color:#1565c0; border:1px solid #90caf9; border-radius:8px; font-size:13px; cursor:pointer; font-weight:500; }
+.btn-download-template:hover { background:#bbdefb; }
+
+/* 密码弹窗 */
+.pwd-overlay {
+    position:fixed; top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,.45); z-index:9999;
+    display:flex; align-items:center; justify-content:center;
+}
+.pwd-dialog {
+    background:white; border-radius:16px; padding:28px 32px;
+    box-shadow:0 10px 40px rgba(0,0,0,.25);
+    min-width:320px; text-align:center;
+}
+.pwd-title { font-size:18px; font-weight:bold; color:#333; margin-bottom:8px; }
+.pwd-desc { color:#666; font-size:13px; margin-bottom:14px; }
+.pwd-input {
+    width:100%; padding:10px 14px; border:2px solid #e0e0e0; border-radius:10px;
+    font-size:15px; outline:none; transition:border-color .2s;
+}
+.pwd-input:focus { border-color:#1976d2; }
+.pwd-lock { border:2px dashed #e0e0e0; border-radius:12px; background:#fafafa; }
+.pwd-input:-webkit-autofill { -webkit-box-shadow:0 0 0 30px white inset !important; }
+
 @media(max-width:768px) {
     body { padding:10px; }
     .header h1{font-size:1.5em}
     .search-section { padding:15px; }
     .input-wrapper { min-width:100%; }
-    .search-input { padding:14px 16px; font-size:16px; }
-    .search-box{flex-direction:column; align-items:stretch; }
-    .search-btn{width:100%; padding:14px 20px; font-size:16px; }
-    .bands-grid{grid-template-columns:1fr; gap:10px;}
-    .band-group { padding:12px; }
-    .country-card { padding:15px; border-radius:12px; margin-bottom:15px; }
-    .country-header { flex-direction:column; align-items:flex-start; gap:8px; padding-bottom:12px; }
-    .country-name { font-size:1.3em; white-space:nowrap; }
-    .country-meta { width:100%; }
-    .badge { font-size:12px; padding:4px 10px; }
-    .rec-title { font-size:1.1em; }
-    .module-card { padding:15px; margin-bottom:12px; }
-    .module-priority { width:30px; height:30px; font-size:13px; top:-8px; left:-8px; }
-    .module-header { margin-left:38px; flex-direction:column; gap:6px; align-items:flex-start; }
-    .module-name { font-size:1.05em; }
-    .assessment-box { padding:12px; margin-top:15px; }
-    .assessment-text { font-size:13px; }
-    .tools-bar { padding:12px; flex-direction:column; align-items:stretch; }
-    .tool-btn { justify-content:center; padding:10px 16px; }
-    .stats { margin-left:0; text-align:center; margin-top:8px; }
-    .tag { font-size:12px; padding:5px 10px; }
-    .band-tags { gap:6px; }
+    .search-input { padding:14px 16px; }
+    .search-box{flex-direction:column; align-items:stretch;}
+    .search-btn{width:100%; padding:14px;}
+    .bands-grid{grid-template-columns:1fr; gap:8px;}
+    .country-card { padding:15px; }
+    .country-header{flex-direction:column; align-items:flex-start;}
+    .country-name { font-size:1.3em; }
+    .tools-bar{flex-direction:column; align-items:stretch;}
+    .stats{margin-left:0; text-align:center;}
+    .product-card{gap:10px;}
+    .import-panel { padding:18px; }
 }
 @media(max-width:480px) {
     .header h1{font-size:1.2em}
     .header p{font-size:.9em}
-    .country-name { font-size:1.2em; }
 }
 </style>
 </head>
 <body>
 <div class="container">
 <div class="header">
-<h1>🌍 4G模块国家查询选型工具</h1>
-<p>输入国家或地区名称，快速查询支持的频段并推荐最适合的4G模块</p>
+    <h1>🌍 TBIT产品适配国家选型工具</h1>
+    <p>输入国家或地区名称，快速查询推荐的产品及所用4G模块</p>
 </div>
 
 <div class="tools-bar">
-<button class="tool-btn" onclick="showAllCountries()">📋 查看所有国家</button>
-<button class="tool-btn" onclick="exportDatabase()">💾 导出数据库</button>
-<span class="stats" id="dbStats">加载中...</span>
+    <button class="tool-btn" onclick="showAllCountries()">📋 查看所有国家</button>
+    <button class="tool-btn" onclick="checkPwd('export')">💾 导出数据库</button>
+    <button class="tool-btn primary" onclick="checkPwd('import')">📥 导入Excel更新</button>
+    <span class="stats" id="dbStats">加载中...</span>
+</div>
+
+<!-- 密码验证弹窗 -->
+<div class="pwd-overlay" id="pwdOverlay" style="display:none" onclick="if(event.target===this)closePwd()">
+    <div class="pwd-dialog">
+        <div class="pwd-title">🔐 需要管理员权限</div>
+        <p class="pwd-desc" id="pwdDesc">请输入密码以继续操作</p>
+        <input type="password" id="pwdInput" class="pwd-input" placeholder="输入密码..." onkeydown="if(event.key==='Enter')verifyPwd()">
+        <div id="pwdError" style="color:#e53935;font-size:14px;margin-top:8px;display:none;font-weight:bold;padding:6px;background:#ffebee;border-radius:6px">❌ 密码错误</div>
+        <div style="margin-top:14px;display:flex;gap:8px">
+            <button class="btn-import" onclick="verifyPwd()">确认</button>
+            <button class="tool-btn" onclick="closePwd()">取消</button>
+        </div>
+    </div>
+</div>
+
+<!-- Excel 导入面板 -->
+<div class="import-panel" id="importPanel">
+    <h2>📥 导入Excel更新产品和模块信息</h2>
+    <p class="import-desc">按照下方格式准备Excel文件后导入，工具将自动解析并更新产品/模块数据，刷新后即可使用新数据。</p>
+
+    <!-- 验证通过后的操作区（由全局密码弹窗保护，无需二次锁屏） -->
+    <div id="importUnlockedArea">
+
+    <div class="import-format">
+        <h3>📋 Excel格式说明（Sheet名：产品不同国家适配性表格）</h3>
+        <table class="format-table">
+            <tr>
+                <th>A列（产品型号）</th>
+                <th>B列（模块型号）</th>
+                <th>C列（所属地区）</th>
+                <th>D列（支持频段）</th>
+            </tr>
+            <tr><td colspan="4" style="background:#e8f5e9;color:#2e7d32;font-weight:bold;text-align:center">共享产品（此行作为分组标题）</td></tr>
+            <tr><td>WD-219G</td><td>MC669-CN</td><td>亚太</td><td>LTE FDD：Band 1/3/5/8 LTE TDD：Band 34/38/39/40/41</td></tr>
+            <tr><td>WD-210/WD-219K</td><td>LE270-CN</td><td>亚太</td><td>LTE FDD：Band 1/3/5/8 LTE TDD：Band 34/38/39/40/41</td></tr>
+            <tr><td colspan="4" style="background:#e3f2fd;color:#1565c0;font-weight:bold;text-align:center">两轮产品（此行作为分组标题）</td></tr>
+            <tr><td>WD-325</td><td>L610-CN</td><td>亚太</td><td>LTE FDD：Band 1/3/5/8 LTE TDD：Band 34/39/40/41</td></tr>
+        </table>
+        <p style="color:#888;font-size:12px;margin-top:8px">💡 产品型号列为空时，视为与上一行同一产品的额外模块；模块信息(频段)来自D列；分组标题行的A列值为 "共享产品" 或 "两轮产品"</p>
+    </div>
+
+    <div class="import-actions">
+        <button class="btn-download-template" onclick="downloadTemplate()">⬇️ 下载模板Excel</button>
+    </div>
+
+    <div class="file-drop-zone" id="dropZone" onclick="document.getElementById('excelFileInput').click()">
+        <input type="file" id="excelFileInput" accept=".xlsx,.xls" onchange="handleFileSelect(event)">
+        <div style="font-size:40px;margin-bottom:10px">📂</div>
+        <div style="font-size:15px;font-weight:500">点击选择Excel文件或拖放到此处</div>
+        <div style="font-size:13px;margin-top:6px">支持 .xlsx 格式</div>
+    </div>
+
+    <div class="import-log" id="importLog"></div>
+
+    <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn-import" id="btnApplyImport" onclick="applyImportedData()" style="display:none">✅ 应用导入数据（本页面生效）</button>
+        <button class="btn-import" id="btnExportSource" onclick="exportSourceFiles()" style="display:none;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none">📦 导出源文件（用于Git上传）</button>
+        <button class="tool-btn" onclick="toggleImportPanel()">✖ 关闭</button>
+    </div>
+    </div><!-- end importUnlockedArea -->
 </div>
 
 <div class="search-section">
-<div class="search-box">
-<div class="input-wrapper">
-<input type="text" class="search-input" id="searchInput" placeholder="请输入国家或地区名称（如：日本、巴西、德国...）" autocomplete="off" onkeyup="handleSearchInput(event)">
-<div class="autocomplete" id="autocomplete"></div>
-</div>
-<button class="search-btn" onclick="searchCountry()">🔍 查询</button>
-</div>
+    <div class="search-box">
+        <div class="input-wrapper">
+            <input type="text" class="search-input" id="searchInput" placeholder="请输入国家或地区名称（如：中国、日本、德国...）" autocomplete="off" onkeyup="handleSearchInput(event)">
+            <div class="autocomplete" id="autocomplete"></div>
+        </div>
+        <button class="search-btn" onclick="searchCountry()">🔍 查询</button>
+    </div>
 </div>
 
 <div class="results" id="results"></div>
@@ -138,20 +296,39 @@ body {
 <script>
 // ========== 内嵌数据库 ==========
 {{MODULES_PLACEHOLDER}}
+{{PRODUCTS_PLACEHOLDER}}
 {{COUNTRIES_PLACEHOLDER}}
 
-let currentResults = [];
-document.addEventListener('DOMContentLoaded', initApp);
+// 运行时可被导入数据覆盖
+let RUNTIME_MODULE_DB = Object.assign({}, MODULE_DB);
+let RUNTIME_PRODUCTS_DB = Object.assign({}, PRODUCTS_DB);
+let RUNTIME_COUNTRY_DB = COUNTRY_DB.slice();
 
-function initApp() {
-    document.getElementById('dbStats').textContent = '📊 数据库: ' + COUNTRY_DB.length + '个国家/地区 | ' + Object.keys(MODULE_DB).length + '种模块';
+let currentResults = [];
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('dbStats').textContent =
+        '📊 数据库: ' + RUNTIME_COUNTRY_DB.length + '个国家 | ' +
+        Object.keys(RUNTIME_MODULE_DB).length + '种模块 | ' +
+        Object.keys(RUNTIME_PRODUCTS_DB).length + '种产品';
     showWelcome();
-    const si = document.getElementById('searchInput');
     document.addEventListener('click', function(e) {
         if (!e.target.closest('.input-wrapper')) hideAutocomplete();
     });
-}
+    // 拖拽支持
+    var dz = document.getElementById('dropZone');
+    dz.addEventListener('dragover', function(e){ e.preventDefault(); dz.classList.add('drag-over'); });
+    dz.addEventListener('dragleave', function(){ dz.classList.remove('drag-over'); });
+    dz.addEventListener('drop', function(e){
+        e.preventDefault(); dz.classList.remove('drag-over');
+        var f = e.dataTransfer.files[0];
+        if (f) processExcelFile(f);
+    });
+});
 
+// ============================================================
+// 搜索逻辑
+// ============================================================
 function handleSearchInput(e) {
     var q = e.target.value.trim();
     if (e.key === 'Enter') { searchCountry(); return; }
@@ -168,17 +345,24 @@ function searchCountry() {
 }
 
 function fuzzySearch(q) {
-    var ql = q.toLowerCase().normalize('NFKC');
-    return COUNTRY_DB.filter(function(c) {
-        var n = (c.name || '').toLowerCase();
-        var rg = (c.region || '').toLowerCase();
-        return n.indexOf(ql) !== -1 || rg.indexOf(ql) !== -1;
+    var ql = q.toLowerCase();
+    return RUNTIME_COUNTRY_DB.filter(function(c) {
+        return (c.name||'').toLowerCase().indexOf(ql) !== -1 ||
+               (c.region||'').toLowerCase().indexOf(ql) !== -1;
     }).sort(function(a, b) {
-        var an = (a.name || '').toLowerCase();
-        var bn = (b.name || '').toLowerCase();
-        var ae = (an === ql) ? 0 : (an.indexOf(ql) === 0) ? 1 : 2;
-        var be = (bn === ql) ? 0 : (bn.indexOf(ql) === 0) ? 1 : 2;
-        return ae - be || an.localeCompare(bn, 'zh-CN');
+        var an = (a.name||'').toLowerCase(), bn = (b.name||'').toLowerCase();
+        // 精确匹配排第一，完整单词前缀匹配排第二，子串包含排第三，最后按名称排序
+        if (an === ql && bn !== ql) return -1;
+        if (bn === ql && an !== ql) return 1;
+        // 完整单词前缀：国家名以查询词开头且后面是边界
+        var aPrefix = an.indexOf(ql) === 0 ? (an[ql.length] === undefined || /[^a-z\u4e00-\u9fff]/.test(an[ql.length])) : false;
+        var bPrefix = bn.indexOf(ql) === 0 ? (bn[ql.length] === undefined || /[^a-z\u4e00-\u9fff]/.test(bn[ql.length])) : false;
+        if (aPrefix && !bPrefix) return -1;
+        if (!aPrefix && bPrefix) return 1;
+        // 子串位置越靠前越好
+        var ai = an.indexOf(ql), bi = bn.indexOf(ql);
+        if (ai !== bi) return ai - bi;
+        return an.localeCompare(bn, 'zh-CN');
     });
 }
 
@@ -187,179 +371,732 @@ function showAutocomplete(q) {
     var el = document.getElementById('autocomplete');
     if (!r.length) return hideAutocomplete();
     el.innerHTML = r.map(function(x) {
-        return '<div class="autocomplete-item" onclick="selectCountry(\'' + x.name.replace(/'/g, "\\'") + '\')">🌐 ' + x.name + ' <span style="color:#999;font-size:12px">' + x.region + '</span></div>';
+        return '<div class="autocomplete-item" onclick="selectCountry(\'' + x.name.replace(/'/g,"\\'") + '\')">' +
+               '🌐 ' + x.name + ' <span style="color:#999;font-size:12px">' + x.region + '</span></div>';
     }).join('');
     el.style.display = 'block';
 }
 
-function hideAutocomplete() {
-    document.getElementById('autocomplete').style.display = 'none';
-}
-
+function hideAutocomplete() { document.getElementById('autocomplete').style.display = 'none'; }
 function selectCountry(n) {
     document.getElementById('searchInput').value = n;
-    hideAutocomplete();
-    searchCountry();
+    hideAutocomplete(); searchCountry();
 }
 
+// ============================================================
+// 渲染
+// ============================================================
 function renderResults(cs) {
     document.getElementById('results').innerHTML = cs.map(renderCard).join('');
 }
 
 function renderCard(c) {
-    var recs = getRecs(c);
     var html = '<div class="country-card">';
-    
-    // 国家头部
+    // 头部
     html += '<div class="country-header">';
-    html += '<div><div class="country-name">🌏 ' + escHtml(c.name) + '</div></div>';
-    html += '<div class="country-meta">';
+    html += '<div class="country-name">🌏 ' + escHtml(c.name) + '</div>';
     html += '<span class="badge badge-region">' + escHtml(c.region) + '</span>';
-    html += '</div></div>';
-    
-    // 频段
-    html += '<div class="bands-grid">' + bgHtml(c.bands) + '</div>';
-    
-    // 推荐模块
-    html += '<div class="recommendations"><div class="rec-title">💡 推荐使用的模块（按优先级排序）</div>';
-    recs.forEach(function(m, i) {
-        html += mc(m, i + 1);
-    });
     html += '</div>';
-    
+    // 频段
+    if (c.bands) html += '<div class="bands-grid">' + bgHtml(c.bands) + '</div>';
+    // 推荐产品
+    html += renderProductRecs(c);
     // 综合评估
-    html += '<div class="assessment-box"><div class="assessment-title">📝 综合评估说明</div><div class="assessment-text">' + escHtml(c.assessment) + '</div></div>';
-    
+    if (c.assessment) {
+        html += '<div class="assessment-box"><div class="assessment-title">📝 综合评估说明</div>' +
+                '<div class="assessment-text">' + escHtml(c.assessment) + '</div></div>';
+    }
     html += '</div>';
     return html;
 }
 
+function renderProductRecs(c) {
+    var pm = c.product_matches || {};
+    var cats = [
+        { key:'共享产品', label:'🔷 共享产品', cls:'cat-shared' },
+        { key:'两轮产品', label:'🚲 两轮产品', cls:'cat-twowheels' }
+    ];
+    var html = '<div class="recommendations">';
+    var hasAny = false;
+    cats.forEach(function(cat) {
+        var list = pm[cat.key] || [];
+        if (!list.length) return;
+        hasAny = true;
+        html += '<div class="category-section">';
+        html += '<div class="category-title ' + cat.cls + '">' + cat.label + '</div>';
+        list.forEach(function(item, i) {
+            // 注入国家频段，供展开子模块时计算适配等级
+            item._countryBands = c.bands;
+            html += renderProductCard(item, i + 1);
+        });
+        html += '</div>';
+    });
+    if (!hasAny) {
+        html += '<div style="color:#999;font-size:14px;padding:10px 0">暂无匹配产品</div>';
+    }
+    html += '</div>';
+    return html;
+}
+
+function renderProductCard(item, rank) {
+    var adaptClass = 'adapt-' + item.adapt.grade.toLowerCase().replace('+','p');
+    var modInfo = RUNTIME_MODULE_DB[item.module_key] || {};
+    var gsmCls = modInfo.has_gsm ? 'gsm-yes' : 'gsm-no';
+    var gsmTxt = modInfo.has_gsm ? '✓ 支持GSM' : '✗ 不支持GSM';
+
+    // 最佳模块显示（含频段）
+    var bestModHtml = '<span class="mod-chip">' + escHtml(item.module_key) + '</span>';
+    if (modInfo.region) bestModHtml += '<span style="color:#888;font-size:11px">（' + escHtml(modInfo.region) + '）</span>';
+    var bestBandsStr = formatModBands(modInfo);
+    if (bestBandsStr) bestModHtml += '<span class="mod-bands-inline" title="支持频段">' + escHtml(bestBandsStr) + '</span>';
+
+    var html = '<div class="product-card">';
+    html += '<div class="product-rank">' + rank + '</div>';
+    html += '<div class="product-main">';
+    html += '  <div class="product-name">' + escHtml(item.product) + '</div>';
+    html += '  <div class="product-module">使用模块：' + bestModHtml + '</div>';
+    html += '</div>';
+    html += '<div class="product-adapt">';
+    html += '  <span class="adapt-badge ' + adaptClass + '">' + item.adapt.label + '</span>';
+    html += '  <span class="adapt-detail">' + (item.adapt.detail||'') + '</span>';
+    html += '  <span class="product-gsm ' + gsmCls + '">' + gsmTxt + '</span>';
+    html += '</div>';
+    html += '</div>';
+
+    // 若该产品有多个模块，展示全部（可折叠，按适配等级排序）
+    var allMods = item.all_modules || [];
+    if (allMods.length > 1) {
+        var uid = 'mm_' + item.product.replace(/[^a-zA-Z0-9]/g,'_') + '_' + rank;
+        // 计算每个子模块的适配等级并排序
+        var modList = [];
+        allMods.forEach(function(mk) {
+            var mi = RUNTIME_MODULE_DB[mk] || {};
+            var a2 = computeAdaptLocal(mi, item._countryBands);
+            modList.push({mk:mk, mi:mi, a2:a2, ac2:'adapt-' + a2.grade.toLowerCase().replace('+','p')});
+        });
+        // 按适配等级优先级排序：S > A+ > A > B+ > B > C > D
+        var gradeOrder = {S:0,'A+':1,A:2,'B+':3,B:4,C:5,D:6};
+        modList.sort(function(x, y) {
+            return (gradeOrder[x.a2.grade]||9) - (gradeOrder[y.a2.grade]||9)
+                || (y.a2.pct - x.a2.pct);
+        });
+
+        html += '<div class="more-modules">';
+        html += '<span class="more-modules-toggle" onclick="toggleModules(\'' + uid + '\')">▶ 该产品支持 ' + allMods.length + ' 个模块，点击查看全部区域方案</span>';
+        html += '<div class="more-modules-list" id="' + uid + '">';
+        modList.forEach(function(entry) {
+            html += '<div class="sub-module-row">';
+            html += '  <span class="sub-mod-name">' + escHtml(entry.mk) + '</span>';
+            html += '  <span class="adapt-badge ' + entry.ac2 + '" style="font-size:11px;padding:2px 8px">' + entry.a2.label + '</span>';
+            html += '  <span class="adapt-detail">' + (entry.a2.detail||'') + '</span>';
+            html += '  <span class="sub-mod-region">' + escHtml(entry.mi.region||'') + '</span>';
+            html += '  <span class="product-gsm ' + (entry.mi.has_gsm?'gsm-yes':'gsm-no') + '">' + (entry.mi.has_gsm?'✓ GSM':'✗ 无GSM') + '</span>';
+            var subBands = formatModBands(entry.mi);
+            if (subBands) html += '  <span class="mod-bands-sub">' + escHtml(subBands) + '</span>';
+            html += '</div>';
+        });
+        html += '</div></div>';
+    }
+    return html;
+}
+
+function formatModBands(modInfo) {
+    if (!modInfo || !modInfo.bands) return '';
+    var parts = [];
+    var fdd = modInfo.bands.FDD || [];
+    var tdd = modInfo.bands.TDD || [];
+    // 将 "B1","B3"... 格式化为 "B1/3/5/8" 样式（去掉B前缀只保留第一个）
+    function fmt(arr) {
+        if (!arr.length) return '';
+        return arr.map(function(b){ return b.replace(/^B/,''); }).join('/');
+    }
+    if (fdd.length) parts.push('FDD: B' + fmt(fdd));
+    if (tdd.length) parts.push('TDD: B' + fmt(tdd));
+    return parts.join('  ');
+}
+
+function toggleModules(uid) {
+    var el = document.getElementById(uid);
+    if (!el) return;
+    el.classList.toggle('open');
+    var toggle = el.previousElementSibling;
+    if (toggle) toggle.textContent = el.classList.contains('open') ?
+        '▼ 收起模块列表' :
+        '▶ 该产品支持 ' + el.children.length + ' 个模块，点击查看全部区域方案';
+}
+
+function computeAdaptLocal(modInfo, countryBands) {
+    if (!modInfo || !modInfo.bands || !countryBands) return {grade:'D',label:'D 不推荐',pct:0,detail:'无数据'};
+    var cl = []; var ml = [];
+    (countryBands.FDD||[]).forEach(function(b){cl.push(b)});
+    (countryBands.TDD||[]).forEach(function(b){cl.push(b)});
+    (modInfo.bands.FDD||[]).forEach(function(b){ml.push(b)});
+    (modInfo.bands.TDD||[]).forEach(function(b){ml.push(b)});
+    if (!cl.length) return {grade:'A',label:'A 高度适配',pct:100,detail:'100%'};
+    var cov = cl.filter(function(b){return ml.indexOf(b)!==-1}).length;
+    var pct = Math.round(cov/cl.length*100);
+    var g = modInfo.has_gsm||false;
+    if(pct===100&&g) return {grade:'S',label:'S 完美适配',pct,detail:'100%+GSM'};
+    if(pct===100) return {grade:'A+',label:'A+ 极佳适配',pct,detail:'100%'};
+    if(pct>=80&&g) return {grade:'A',label:'A 高度适配',pct,detail:pct+'%+GSM'};
+    if(pct>=80||(pct>=60&&g)) return {grade:'B+',label:'B+ 良好适配',pct,detail:pct+'%'+(g?'+GSM':'')};
+    if(pct>=40) return {grade:'B',label:'B 基本可用',pct,detail:pct+'%'};
+    if(pct>=1) return {grade:'C',label:'C 勉强可用',pct,detail:pct+'%'};
+    return {grade:'D',label:'D 不推荐',pct:0,detail:'无覆盖'};
+}
+
 function bgHtml(b) {
     if (!b) return '';
-    var types = [['FDD','FDD LTE'],['TDD','TDD LTE'],['WCDMA','WCDMA']];
-    return types.map(function(tup) {
-        var t = tup[0], l = tup[1];
-        var bl = b[t];
-        if (!bl || !bl.length) return '';
-        return '<div class="band-group"><div class="band-title">' + l + '</div><div class="band-tags">' +
-            bl.map(function(band) { return '<span class="tag">' + band + '</span>'; }).join('') +
+    return [['FDD','FDD LTE'],['TDD','TDD LTE'],['WCDMA','WCDMA']].map(function(tup){
+        var bl = b[tup[0]];
+        if (!bl||!bl.length) return '';
+        return '<div class="band-group"><div class="band-title">' + tup[1] + '</div><div class="band-tags">' +
+            bl.map(function(x){return '<span class="tag">'+x+'</span>';}).join('') +
             '</div></div>';
     }).join('');
 }
 
-// 计算模块对某个国家的适配等级
-function getAdaptationLevel(module, country) {
-    if (!module.bands || !country.bands) return { grade: 'D', label: 'D 不推荐', pct: 0 };
-    // 收集国家所有LTE频段
-    var countryLte = [];
-    (country.bands.FDD || []).forEach(function(b) { countryLte.push(b); });
-    (country.bands.TDD || []).forEach(function(b) { countryLte.push(b); });
-    // 收集模块所有LTE频段
-    var moduleLte = [];
-    (module.bands.FDD || []).forEach(function(b) { moduleLte.push(b); });
-    (module.bands.TDD || []).forEach(function(b) { moduleLte.push(b); });
-    // 计算覆盖率
-    var covered = 0;
-    var total = countryLte.length;
-    if (total === 0) return { grade: 'A', label: 'A 高度适配', pct: 100 }; // 国家无4G频段则默认好
-    countryLte.forEach(function(cb) {
-        if (moduleLte.indexOf(cb) !== -1) covered++;
-    });
-    var pct = Math.round(covered / total * 100);
-    var hasGsm = module.has_gsm || false;
+// ============================================================
+// Excel 导入功能（纯前端，使用SheetJS解析）
+// ============================================================
+var importedData = null;
 
-    // 等级判定逻辑
-    if (pct === 100 && hasGsm)
-        return { grade: 'S', label: 'S 完美适配', pct: pct, detail: '100%覆盖 + GSM' };
-    if (pct === 100 && !hasGsm)
-        return { grade: 'A+', label: 'A+ 极佳适配', pct: pct, detail: '100%覆盖' };
-    if (pct >= 80 && hasGsm)
-        return { grade: 'A', label: 'A 高度适配', pct: pct, detail: pct + '%覆盖 + GSM' };
-    if ((pct >= 80 && !hasGsm) || (pct >= 60 && hasGsm))
-        return { grade: 'B+', label: 'B+ 良好适配', pct: pct, detail: pct + '%' + (hasGsm ? '+ GSM' : '') };
-    if (pct >= 40)
-        return { grade: 'B', label: 'B 基本可用', pct: pct, detail: pct + '%' };
-    if (pct >= 1)
-        return { grade: 'C', label: 'C 勉强可用', pct: pct, detail: pct + '%' };
-    return { grade: 'D', label: 'D 不推荐', pct: 0, detail: '无覆盖' };
+function toggleImportPanel() {
+    var p = document.getElementById('importPanel');
+    p.classList.toggle('open');
 }
 
-function mc(m, p) {
-    var gc = m.has_gsm ? 'gsm-yes' : 'gsm-no';
-    var gt = m.has_gsm ? '✓ 支持GSM' : '✗ 不支持GSM';
-    var adapt = getAdaptationLevel(m, currentResults[0] || COUNTRY_DB.find(function(c){return c.modules_available && Object.keys(c.modules_available).some(function(k){return c.modules_available[k].name===m.name;})}));
-    var adaptClass = 'adapt-' + adapt.grade.toLowerCase().replace('+','p');
-    // 构建项目标签HTML（支持list和dict两种格式，dict按子模块分组展示）
-    var projectsHtml = '';
-    if (m.projects) {
-        if (Array.isArray(m.projects)) {
-            // 简单数组格式：直接展示
-            if (m.projects.length > 0) {
-                projectsHtml = '<div class="module-projects">📌 使用产品型号：' + m.projects.map(function(pj){ return '<span class="project-tag">' + pj + '</span>'; }).join('') + '</div>';
+function handleFileSelect(e) {
+    var f = e.target.files[0];
+    if (f) processExcelFile(f);
+}
+
+function processExcelFile(file) {
+    logImport('info', '读取文件：' + file.name);
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            if (typeof XLSX === 'undefined') {
+                logImport('err', '❌ XLSX库未加载，正在动态加载...');
+                loadSheetJS(function() { parseWorkbook(e.target.result); });
+            } else {
+                parseWorkbook(e.target.result);
             }
-        } else {
-            // dict格式（如EU版）：按子模块型号分组展示
-            var groups = [];
-            for (var subModel in m.projects) {
-                if (m.projects.hasOwnProperty(subModel)) {
-                    var tags = m.projects[subModel].map(function(pj){ return '<span class="project-tag">' + pj + '</span>'; }).join('');
-                    groups.push('<b>' + subModel + '</b>：' + tags);
-                }
-            }
-            if (groups.length > 0) {
-                projectsHtml = '<div class="module-projects">📌 使用产品型号：' + groups.join(' / ') + '</div>';
-            }
+        } catch(ex) {
+            logImport('err', '❌ 读取失败：' + ex.message);
         }
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function loadSheetJS(cb) {
+    var pending = 0;
+    function checkDone() {
+        pending--;
+        if (pending === 0) { logImport('ok', '✅ XLSX库加载成功'); cb(); }
     }
-    return '<div class="module-card">' +
-        '<div class="module-priority">' + p + '</div>' +
-        '<div class="module-adapt-level"><span class="adapt-badge ' + adaptClass + '">' + adapt.label + '</span><span class="adapt-detail">' + (adapt.detail||'') + '</span></div>' +
-        '<div class="module-header"><div>' +
-            '<div class="module-name">' + m.name + '</div>' +
-            '<div style="color:#888;font-size:13px;margin-top:4px">' + m.region + '</div>' +
-        '</div>' +
-        '<span class="module-gsm-badge ' + gc + '">' + gt + '</span></div>' +
-        '<div class="bands-grid" style="margin:10px 0 0 45px">' + bgHtml(m.bands) + '</div>' +
-        projectsHtml +
-        '<div class="module-note">💬 ' + m.note + '</div>' +
-    '</div>';
+
+    // 加载 XLSX
+    if (typeof XLSX === 'undefined') {
+        pending++;
+        var s = document.createElement('script');
+        s.src = 'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js';
+        s.onload = checkDone;
+        s.onerror = function() {
+            // 尝试备用CDN
+            var s2 = document.createElement('script');
+            s2.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+            s2.onload = checkDone;
+            s2.onerror = function() { logImport('err', '❌ XLSX库加载失败，请检查网络连接'); };
+            document.head.appendChild(s2);
+        };
+        document.head.appendChild(s);
+    }
+
+    // 加载 FileSaver.js（用于 file:// 协议下正确设置下载文件名）
+    if (typeof saveAs === 'undefined') {
+        pending++;
+        var fs = document.createElement('script');
+        fs.src = 'https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js';
+        fs.onload = function() { console.log('[EXPORT] FileSaver.js 加载成功'); checkDone(); };
+        fs.onerror = function() { console.warn('[EXPORT] FileSaver.js 加载失败，将使用回退方案'); checkDone(); };
+        document.head.appendChild(fs);
+    }
+
+    if (pending === 0) { cb(); }
 }
 
-// 获取一个模块对某个国家4G频段的覆盖数
-function getLteCoverageCount(module, country) {
-    var count = 0;
-    if (!module.bands || !country.bands) return 0;
-    // 收集国家所有LTE频段（FDD+TDD）
-    var countryLte = [];
-    (country.bands.FDD || []).forEach(function(b) { countryLte.push(b); });
-    (country.bands.TDD || []).forEach(function(b) { countryLte.push(b); });
-    // 收集模块所有LTE频段
-    var moduleLte = [];
-    (module.bands.FDD || []).forEach(function(b) { moduleLte.push(b); });
-    (module.bands.TDD || []).forEach(function(b) { moduleLte.push(b); });
-    // 计算覆盖数
-    countryLte.forEach(function(cb) {
-        if (moduleLte.indexOf(cb) !== -1) count++;
-    });
-    return count;
-}
-
-function getRecs(c) {
-    if (!c.modules_available) return [];
-    var mods = Object.values(c.modules_available);
-    mods.sort(function(a, b) {
-        // 第一排序：覆盖该国的4G LTE频段数量多的排前面
-        var ca = getLteCoverageCount(a, c);
-        var cb = getLteCoverageCount(b, c);
-        if (ca !== cb) return cb - ca;
-        // 第二排序：覆盖数相同时，支持GSM的排前面
-        if ((a.has_gsm || false) !== (b.has_gsm || false)) {
-            return (b.has_gsm || false) ? 1 : -1;
+function parseWorkbook(buffer) {
+    try {
+        var wb = XLSX.read(buffer, { type:'array' });
+        var sheetName = wb.SheetNames[0];
+        logImport('info', '读取Sheet：' + sheetName);
+        var ws = wb.Sheets[sheetName];
+        var rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
+        logImport('info', '共 ' + rows.length + ' 行数据');
+        var result = parseProductRows(rows);
+        if (result) {
+            importedData = result;
+            logImport('ok', '✅ 解析完成！共识别 ' + Object.keys(result.products).length + ' 个产品，' + Object.keys(result.modules).length + ' 个模块');
+            document.getElementById('btnApplyImport').style.display = 'inline-block';
         }
-        // 第三排序：都相同则按原始priority
-        return (b.priority || 0) - (a.priority || 0);
+    } catch(ex) {
+        logImport('err', '❌ 解析失败：' + ex.message);
+    }
+}
+
+function parseProductRows(rows) {
+    var products = {};
+    var modules = {};
+    var currentCategory = '两轮产品';
+    var currentProduct = null;
+
+    rows.forEach(function(row, idx) {
+        var col0 = String(row[0]||'').trim();
+        var col1 = String(row[1]||'').trim();
+        var col2 = String(row[2]||'').trim();
+        var col3 = String(row[3]||'').trim();
+
+        // 跳过标题行
+        if (col0 === '产品型号' && col1 === '模块型号') {
+            logImport('info', '  第'+(idx+1)+'行：跳过标题行');
+            return;
+        }
+
+        // 分组行（"共享产品" / "两轮产品"）
+        if (col0 === '共享产品' || col0 === '两轮产品') {
+            currentCategory = col0;
+            logImport('info', '  第'+(idx+1)+'行：分组 → ' + currentCategory);
+            return;
+        }
+
+        // 空行跳过
+        if (!col0 && !col1) return;
+
+        // 有产品型号的行
+        if (col0) {
+            // 可能是 "WD-210/WD-219K" 多型号合并格式
+            var productNames = col0.split('/').map(function(p){ return p.trim(); }).filter(Boolean);
+            currentProduct = productNames;
+            productNames.forEach(function(pname) {
+                if (!products[pname]) {
+                    products[pname] = { category: currentCategory, modules: [] };
+                }
+            });
+        }
+
+        // 有模块型号的行（无论产品列是否为空）
+        if (col1 && currentProduct) {
+            var modKey = col1.replace(/\//g,'-').replace(/\s/g,'');
+            // 解析频段
+            var bands = parseBandString(col3);
+            var hasGsm = col3.toLowerCase().indexOf('gsm') !== -1;
+            if (!modules[modKey]) {
+                modules[modKey] = {
+                    name: col1,
+                    bands: bands,
+                    has_gsm: hasGsm,
+                    region: col2,
+                    note: col2 + '区域模块'
+                };
+                logImport('ok', '  模块：' + modKey + ' (' + col2 + ')');
+            }
+            currentProduct.forEach(function(pname) {
+                if (products[pname] && products[pname].modules.indexOf(modKey) === -1) {
+                    products[pname].modules.push(modKey);
+                }
+            });
+        }
     });
-    return mods;
+
+    logImport('info', '产品清单：' + Object.keys(products).join(', '));
+    return { products: products, modules: modules };
+}
+
+function parseBandString(str) {
+    var result = { FDD:[], TDD:[] };
+    if (!str) return result;
+    // 匹配 FDD Band 或 LTE FDD
+    var fddMatch = str.match(/(?:LTE\s*)?FDD[：:]\s*(?:Band\s*)?([\d/B\s]+)/i);
+    var tddMatch = str.match(/(?:LTE\s*)?TDD[：:]\s*(?:Band\s*)?([\d/B\s]+)/i);
+    function extractBands(m) {
+        if (!m) return [];
+        return m[1].split(/[\s/]+/).map(function(x){
+            var n = x.replace(/[^0-9]/g,'');
+            return n ? 'B'+n : null;
+        }).filter(Boolean);
+    }
+    result.FDD = extractBands(fddMatch);
+    result.TDD = extractBands(tddMatch);
+    return result;
+}
+
+function applyImportedData() {
+    if (!importedData) return;
+    RUNTIME_MODULE_DB = importedData.modules;
+    RUNTIME_PRODUCTS_DB = importedData.products;
+    // 重新计算所有国家的产品匹配
+    RUNTIME_COUNTRY_DB = COUNTRY_DB.map(function(c) {
+        var newC = Object.assign({}, c);
+        newC.product_matches = recomputeMatches(c.bands, importedData.products, importedData.modules);
+        return newC;
+    });
+    document.getElementById('dbStats').textContent =
+        '📊 数据库: ' + RUNTIME_COUNTRY_DB.length + '个国家 | ' +
+        Object.keys(RUNTIME_MODULE_DB).length + '种模块 | ' +
+        Object.keys(RUNTIME_PRODUCTS_DB).length + '种产品（已从Excel更新）';
+    logImport('ok', '✅ 已应用！搜索结果将使用新数据。');
+    // 显示导出源文件按钮
+    document.getElementById('btnExportSource').style.display = '';
+    if (currentResults.length) {
+        currentResults = currentResults.map(function(c){
+            return RUNTIME_COUNTRY_DB.find(function(x){return x.name===c.name;})||c;
+        });
+        renderResults(currentResults);
+    }
+}
+
+function recomputeMatches(countryBands, prods, mods) {
+    var gradeOrder = {S:0,'A+':1,A:2,'B+':3,B:4,C:5,D:6};
+    var result = {'共享产品':[], '两轮产品':[]};
+    if (!countryBands) return result;
+
+    Object.keys(prods).forEach(function(pname) {
+        var pinfo = prods[pname];
+        var bestMod = null, bestAdapt = null, bestPct = -1;
+        (pinfo.modules||[]).forEach(function(mk) {
+            var mi = mods[mk];
+            if (!mi) return;
+            var a = computeAdaptLocal(mi, countryBands);
+            if (a.pct > bestPct) { bestPct = a.pct; bestMod = mk; bestAdapt = a; }
+        });
+        if (bestMod && bestPct > 0) {
+            var cat = pinfo.category || '两轮产品';
+            result[cat].push({
+                product: pname, category: cat,
+                module_key: bestMod, module_info: mods[bestMod]||{},
+                all_modules: pinfo.modules, adapt: bestAdapt,
+                _countryBands: countryBands
+            });
+        }
+    });
+    [' 共享产品','两轮产品'].forEach(function(cat){
+        (result[cat]||[]).sort(function(a,b){
+            return (gradeOrder[a.adapt.grade]||9)-(gradeOrder[b.adapt.grade]||9)||b.adapt.pct-a.adapt.pct;
+        });
+    });
+    return result;
+}
+
+// ============================================================
+// 下载模板Excel（使用SheetJS动态生成）
+// ============================================================
+function downloadTemplate() {
+    function doDownload() {
+        var wb = XLSX.utils.book_new();
+        var data = [
+            ['共享产品', '', '', ''],
+            ['产品型号', '模块型号', '所属地区', '支持频段'],
+            ['WD-219G', 'MC669-CN', '亚太', 'LTE FDD：Band 1/3/5/8LTE TDD：Band 34/38/39/40/41'],
+            ['WD-210/WD-219K', 'LE270-CN', '亚太', 'LTE FDD：Band 1/3/5/8LTE TDD：Band 34/38/39/40/41'],
+            ['', 'LE270-EU', '欧洲', 'LTE FDD：B1/3/5/7/8/20/28LTE TDD：B38/40/41'],
+            ['', 'LE270-GL', '全球', 'LTE FDD：B1/2/3/4/5/7/8/12/13/17/18/19/20/25/26/28/66LTE TDD：B34/38/39/40/41'],
+            ['', '', '', ''],
+            ['两轮产品', '', '', ''],
+            ['产品型号', '模块型号', '所属地区', '支持频段'],
+            ['WD-325', 'L610-CN', '亚太', 'LTE FDD：Band 1/3/5/8LTE TDD：Band 34/39/40/41'],
+            ['', 'L610-EU', '欧洲', 'LTE FDD：B1/B3/B7/B8/B20/B28GSM/GPRS/EDGE：900/1800MHz'],
+            ['', 'L610-LA', '拉美', 'LTE FDD：B1/B2/B3/B4/B5/B7/B8/B28/B66GSM/GPRS/EDGE：850/900/1800/1900MHz'],
+            ['WD-300', 'LE270-CN', '亚太', 'LTE FDD：Band 1/3/5/8LTE TDD：Band 34/38/39/40/41'],
+            ['', 'LE270-EU', '欧洲', 'LTE FDD：B1/3/5/7/8/20/28LTE TDD：B38/40/41'],
+            ['', 'LE270-GL', '全球', 'LTE FDD：B1/2/3/4/5/7/8/12/13/17/18/19/20/25/26/28/66LTE TDD：B34/38/39/40/41'],
+            ['WD-110/WD-281/WD-282/WD-280D', 'ML307N-DC/DL', '亚太', 'LTE FDD：Band 1/3/5/8LTE TDD：Band 34/38/39/40/41'],
+        ];
+        var ws = XLSX.utils.aoa_to_sheet(data);
+        ws['!cols'] = [{wch:28},{wch:18},{wch:10},{wch:60}];
+        XLSX.utils.book_append_sheet(wb, ws, '产品不同国家适配性表格');
+        XLSX.writeFile(wb, '产品不同国家适配性表格_模板.xlsx');
+    }
+    if (typeof XLSX === 'undefined') {
+        loadSheetJS(doDownload);
+    } else {
+        doDownload();
+    }
+}
+
+function logImport(type, msg) {
+    var log = document.getElementById('importLog');
+    log.classList.add('has-content');
+    var cls = type === 'ok' ? 'log-ok' : type === 'warn' ? 'log-warn' : type === 'err' ? 'log-err' : '';
+    log.innerHTML += '<div class="' + cls + '">' + escHtml(msg) + '</div>';
+    log.scrollTop = log.scrollHeight;
+}
+
+// ============================================================
+// 其他功能
+// ============================================================
+function showAllCountries() {
+    currentResults = RUNTIME_COUNTRY_DB.slice().sort(function(a,b){
+        return a.name.localeCompare(b.name,'zh-CN');
+    });
+    renderResults(currentResults);
+}
+
+// ============================================================
+// 密码验证（保护导入/导出操作）
+// ============================================================
+var ADMIN_PASSWORD = 'tbit2026';  // 管理员密码，可自行修改
+var pwdPendingAction = null;       // 等待密码验证后要执行的操作
+
+function checkPwd(action) {
+    pwdPendingAction = action;
+    document.getElementById('pwdError').style.display = 'none';
+    document.getElementById('pwdInput').value = '';
+    document.getElementById('pwdOverlay').style.display = 'flex';
+    document.getElementById('pwdInput').focus();
+    var descMap = { export: '导出数据库需要管理员权限', import: '导入数据更新需要管理员权限' };
+    document.getElementById('pwdDesc').textContent = descMap[action] || '请输入密码以继续操作';
+}
+
+function closePwd() {
+    document.getElementById('pwdOverlay').style.display = 'none';
+    pwdPendingAction = null;
+}
+
+function verifyPwd() {
+    var val = document.getElementById('pwdInput').value;
+    console.log('[PWD] 输入值长度:', val.length, '待执行操作:', pwdPendingAction);
+    if (val === ADMIN_PASSWORD) {
+        console.log('[PWD] ✅ 密码正确，执行:', pwdPendingAction);
+        var action = pwdPendingAction;
+        document.getElementById('pwdOverlay').style.display = 'none';
+        pwdPendingAction = null;
+        if (action === 'export') {
+            // 用 try-catch 包裹，防止导出报错导致无反应
+            try {
+                exportDatabase();
+            } catch(ex) {
+                console.error('[PWD] exportDatabase 报错:', ex.message, ex.stack);
+                alert('导出出错：' + ex.message);
+            }
+        } else if (action === 'import') {
+            var panel = document.getElementById('importPanel');
+            panel.classList.add('open');
+            console.log('[PWD] 导入面板已展开');
+            setTimeout(function(){ panel.scrollIntoView({behavior:'smooth', block:'start'}); }, 100);
+        }
+    } else {
+        console.log('[PWD] ❌ 密码错误');
+        document.getElementById('pwdError').style.display = 'block';
+        document.getElementById('pwdError').textContent = '❌ 密码错误，请重新输入';
+        document.getElementById('pwdInput').value = '';
+        document.getElementById('pwdInput').focus();
+    }
+}
+
+function exportDatabase() {
+    // 确保 XLSX 库已加载
+    function doExport() {
+        console.log('[EXPORT] 开始导出...');
+
+        // ========== 1. 国家频段数据库 ==========
+        var countryRows = [];
+        countryRows.push(['国家/地区', '区域', 'LTE FDD频段', 'LTE TDD频段', 'WCDMA频段', '综合评估']);
+        RUNTIME_COUNTRY_DB.forEach(function(c) {
+            countryRows.push([
+                c.name || '',
+                c.region || '',
+                (c.bands && c.bands.FDD) ? c.bands.FDD.join('/') : '',
+                (c.bands && c.bands.TDD) ? c.bands.TDD.join('/') : '',
+                (c.bands && c.bands.WCDMA) ? c.bands.WCDMA.join('/') : '',
+                c.assessment || ''
+            ]);
+        });
+        var wsCountry = XLSX.utils.aoa_to_sheet(countryRows);
+        wsCountry['!cols'] = [{wch:20},{wch:10},{wch:35},{wch:30},{wch:25},{wch:50}];
+
+        // ========== 2. 产品-模块数据库（与导入模板格式一致） ==========
+        var productRows = [];
+        var categories = [
+            { key: '共享产品', label: '共享产品' },
+            { key: '两轮产品', label: '两轮产品' }
+        ];
+        categories.forEach(function(cat) {
+            productRows.push([cat.label, '', '', '']);
+            productRows.push(['产品型号', '模块型号', '所属地区', '支持频段']);
+            Object.keys(RUNTIME_PRODUCTS_DB).forEach(function(pkey) {
+                var p = RUNTIME_PRODUCTS_DB[pkey];
+                if (p.category !== cat.key) return;
+                if (!(p.modules && p.modules.length)) return;
+                p.modules.forEach(function(mk, mi) {
+                    var modInfo = RUNTIME_MODULE_DB[mk] || {};
+                    var fddBands = (modInfo.bands && modInfo.bands.FDD) ? modInfo.bands.FDD.join('/') : '';
+                    var tddBands = (modInfo.bands && modInfo.bands.TDD) ? modInfo.bands.TDD.join('/') : '';
+                    var bandStr = '';
+                    if (fddBands) bandStr += 'LTE FDD：Band ' + fddBands;
+                    if (tddBands) bandStr += '  LTE TDD：Band ' + tddBands;
+                    if (modInfo.has_gsm) bandStr += '  GSM/GPRS/EDGE';
+                    productRows.push([
+                        mi === 0 ? pkey : '',
+                        mk,
+                        modInfo.region || '',
+                        bandStr
+                    ]);
+                });
+            });
+            productRows.push([]);
+        });
+
+        var wsProduct = XLSX.utils.aoa_to_sheet(productRows);
+        wsProduct['!cols'] = [{wch:28},{wch:18},{wch:10},{wch:65}];
+
+        // 生成工作簿
+        var wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, wsCountry, '国家频段数据');
+        XLSX.utils.book_append_sheet(wb, wsProduct, '产品模块数据');
+
+        // 用 write 生成二进制
+        var wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        var blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        var fileName = 'TBIT产品适配国家选型_数据库.xlsx';
+
+        // 优先使用 FileSaver.js（支持 file:// 协议正确设置文件名）
+        if (typeof saveAs === 'function') {
+            try {
+                saveAs(blob, fileName);
+                console.log('[EXPORT] ✅ FileSaver.saveAs 下载已触发');
+                return;
+            } catch (e) {
+                console.warn('[EXPORT] FileSaver 失败，回退到手动下载:', e);
+            }
+        }
+
+        // 回退：显示手动下载栏（FileSaver 不可用时）
+        var url = URL.createObjectURL(blob);
+
+        // 清理旧的下载条
+        var existing = document.getElementById('manualDownloadBar');
+        if (existing) existing.remove();
+
+        // 在页面顶部显示下载栏
+        var bar = document.createElement('div');
+        bar.id = 'manualDownloadBar';
+        bar.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#2e7d32;color:white;padding:14px 24px;z-index:99999;display:flex;align-items:center;gap:16px;box-shadow:0 4px 16px rgba(0,0,0,.3);font-size:15px;font-weight:500;';
+        bar.innerHTML =
+            '<span style="font-size:20px">✅</span><span>Excel 数据库已生成！</span>' +
+            '<a id="manualDlLink" href="' + url + '" download="' + fileName + '" style="background:#ffeb3b;color:#333;padding:8px 20px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:14px;display:inline-flex;align-items:center;gap:6px">📥 点击下载 Excel 文件</a>' +
+            '<span style="color:#ccc;margin-left:8px">' + fileName + '</span>' +
+            '<button onclick="document.getElementById(\'manualDownloadBar\').remove()" style="background:rgba(255,255,255,.25);border:1px solid rgba(255,255,255,.5);color:white;padding:6px 16px;border-radius:6px;cursor:pointer;margin-left:auto;font-size:13px">关闭</button>';
+        document.body.insertBefore(bar, document.body.firstChild);
+
+        // 自动清理 URL（60秒后）
+        setTimeout(function() { try { URL.revokeObjectURL(url); } catch(e) {} }, 60000);
+
+        console.log('[EXPORT] ✅ 手动下载栏已显示（FileSaver 不可用）');
+
+        alert('✅ 导出成功！\n\n页面顶部已出现绿色下载栏，请点击「📥 点击下载 Excel 文件」按钮。\n\n文件名：TBIT产品适配国家选型_数据库.xlsx');
+    }
+
+    // 触发下载
+    console.log('[EXPORT] 检查 XLSX 库...');
+    if (typeof XLSX === 'undefined') {
+        console.log('[EXPORT] XLSX 未加载，正在加载...');
+        loadSheetJS(doExport);
+    } else {
+        console.log('[EXPORT] XLSX 已就绪，直接执行导出');
+        doExport();
+    }
+}
+
+// ============================================================
+// 导出源文件（用于本地覆盖 → build → git push）
+// ============================================================
+function exportSourceFiles() {
+    if (!importedData) {
+        logImport('err', '❌ 没有导入数据，无法导出源文件');
+        return;
+    }
+
+    // --- 1. 导出 build.py 源码片段（MODULES + PRODUCTS_DB）---
+    var modDict = importedData.modules;
+    var prodDict = importedData.products;
+
+    // 构建 MODULES 字典代码
+    var modLines = [];
+    modLines.push("MODULES = {");
+    Object.keys(modDict).forEach(function(key) {
+        var m = modDict[key];
+        var fdd = JSON.stringify(m.bands.FDD || []);
+        var tdd = JSON.stringify(m.bands.TDD || []);
+        modLines.push("    '" + key + "': {");
+        modLines.push("        'name': " + JSON.stringify(m.name) + ",");
+        modLines.push("        'bands': {'FDD': " + fdd + ", 'TDD': " + tdd + "},");
+        modLines.push("        'has_gsm': " + (m.has_gsm ? 'True' : 'False') + ",");
+        modLines.push("        'region': " + JSON.stringify(m.region || '') + ",");
+        modLines.push("        'note': " + JSON.stringify(m.note || '') + "");
+        modLines.push("    },");
+    });
+    modLines.push("}");
+
+    // 构建 PRODUCTS_DB 字典代码
+    var prodLines = [];
+    prodLines.push("PRODUCTS_DB = {");
+    // 按类别分组输出，保持可读性
+    var sharedProds = [], twowheelProds = [];
+    Object.keys(prodDict).forEach(function(key) {
+        var p = prodDict[key];
+        if (p.category === '共享产品') sharedProds.push(key);
+        else twowheelProds.push(key);
+    });
+    function writeProds(list) {
+        list.forEach(function(key) {
+            var p = prodDict[key];
+            prodLines.push("    '" + key + "': {");
+            prodLines.push("        'category': " + JSON.stringify(p.category || '') + ",");
+            prodLines.push("        'modules': " + JSON.stringify(p.modules || []) + "");
+            prodLines.push("    },");
+        });
+    }
+    writeProds(sharedProds);
+    writeProds(twowheelProds);
+    prodLines.push("}");
+
+    var pyContent = "# ============================================================\n" +
+        "# 模块定义 & 产品定义（由Excel导入自动生成）\n" +
+        "# 用法：将以下内容覆盖 build.py 中对应的 MODULES 和 PRODUCTS_DB 字典\n" +
+        "# 然后运行 python build.py 重新生成 index.html\n" +
+        "# ============================================================\n\n" +
+        modLines.join('\n') + "\n\n" +
+        prodLines.join('\n') + "\n";
+
+    downloadFile(pyContent, 'build_data_update.py', 'text/plain');
+    logImport('ok', '✅ 已下载 build_data_update.py！');
+
+    // --- 2. 同时导出当前完整的 MODULES+PRODUCTS 为 JSON 备份 ---
+    var jsonBackup = JSON.stringify({
+        _comment: '将此文件内容分别覆盖到 build.py 的 MODULES 和 PRODUCTS_DB',
+        generated_at: new Date().toISOString(),
+        modules: modDict,
+        products: prodDict
+    }, null, 2);
+    // 延迟一点下载第二个文件
+    setTimeout(function() {
+        downloadFile(jsonBackup, 'imported_modules_products.json', 'application/json');
+        logImport('ok', '✅ 已下载 imported_modules_products.json（备份）');
+    }, 300);
+
+    logImport('info', '📦 操作步骤：');
+    logImport('info', '   ① 打开下载的 build_data_update.py，复制内容覆盖到 build.py 对应位置');
+    logImport('info', '   ② 运行 python build.py');
+    logImport('info', '   ③ git add . && git commit -m "更新模块/产品数据" && git push');
+}
+
+function downloadFile(content, filename, mimeType) {
+    var blob = new Blob([content], {type: mimeType});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
 }
 
 function showWelcome() {
@@ -371,41 +1108,13 @@ function showWelcome() {
 function showNoResults(q) {
     document.getElementById('results').innerHTML =
         '<div class="empty-state"><div class="empty-state-icon">😕</div>' +
-        '<div class="empty-state-text">未找到 "' + escHtml(q) + '" 相关结果<br><small style="opacity:.7">请尝试其他关键词</small></div></div>';
-}
-
-function showAllCountries() {
-    currentResults = COUNTRY_DB.slice().sort(function(a, b) {
-        return a.name.localeCompare(b.name, 'zh-CN');
-    });
-    renderResults(currentResults);
-}
-
-function exportDatabase() {
-    var s = JSON.stringify({ COUNTRY_DB: COUNTRY_DB, MODULE_DB: MODULE_DB }, null, 2);
-    var blob = new Blob([s], { type: 'application/json' });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = '4g_module_database.json';
-    a.click();
-    URL.revokeObjectURL(url);
-}
-
-function rc(r) {
-    switch ((r || '').toLowerCase()) {
-        case '低': return 'low';
-        case '中': return 'medium';
-        case '高': return 'high';
-        default: return 'low';
-    }
+        '<div class="empty-state-text">未找到 "' + escHtml(q) + '" 相关结果</div></div>';
 }
 
 function escHtml(t) {
     if (!t) return '';
     var d = document.createElement('div');
-    d.textContent = t;
-    return d.innerHTML;
+    d.textContent = t; return d.innerHTML;
 }
 </script>
 </body>

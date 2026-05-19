@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-4G模块选型工具 - 一键构建脚本（v2.0 - 自动匹配架构）
+4G模块选型工具 - 一键构建脚本（v3.0 - 以产品为主体架构）
 用法：运行此脚本 → 读取 data.json + template.html → 生成 index.html（数据内嵌）
 
 架构：
-- data.json：只存国家数据（扁平列表），不再按模块分Sheet
-- build.py：自动计算每个国家能被哪些模块支持
-- MODULES dict：定义所有模块的频段、GSM支持等
-更新数据：编辑 data.json → 重新运行此脚本即可
+- data.json：存储国家数据（扁平列表）
+- build.py：定义产品表PRODUCTS_DB + 模块表MODULES，自动计算国家-产品-模块匹配
+- MODULES dict：每个模块的频段、GSM支持等
+- PRODUCTS_DB：以产品为主体，记录每个产品支持的模块和类别
+更新数据：编辑 PRODUCTS_DB 或 MODULES → 重新运行此脚本即可；也可通过Excel导入更新
 """
 
 import json
@@ -23,60 +24,104 @@ TEMPLATE_FILE = os.path.join(TOOL_DIR, 'template.html')
 OUTPUT_FILE = os.path.join(TOOL_DIR, 'index.html')
 
 # ============================================================
-# 模块定义（在此处添加新模块）
+# 模块定义（频段信息，每个模块的技术规格）
 # ============================================================
 MODULES = {
-    'CN': {
-        'name': 'MC669-CN / LE270-CN / ML307N-DC-DL',
-        'short_name': 'CN三合一',
-        'bands': {'FDD': ['B1', 'B3', 'B5', 'B8'], 'TDD': ['B34', 'B38', 'B39', 'B40', 'B41']},
+    'MC669-CN': {
+        'name': "MC669-CN",
+        'bands': {'FDD': ["B1","B3","B5","B8"], 'TDD': ["B34","B38","B39","B40","B41"]},
         'has_gsm': False,
-        'priority': 100,
-        'region': '亚太/中东/非洲/大洋洲',
-        'note': '不支持GSM，适合亚太地区',
-        'projects': {'MC669-CN': ['WD-219G'], 'LE270-CN': ['WD-300', 'WD-210', 'WD-218', 'WD-219K'], 'ML307N-DC-DL': ['WD-110', 'WD-281', 'WD-282', 'MW-100', 'WD-280D']}
+        'region': "亚太",
+        'note': "亚太区域模块"
+    },
+    'LE270-CN': {
+        'name': "LE270-CN",
+        'bands': {'FDD': ["B1","B3","B5","B8"], 'TDD': ["B34","B38","B39","B40","B41"]},
+        'has_gsm': False,
+        'region': "亚太",
+        'note': "亚太区域模块"
+    },
+    'LE270-EU': {
+        'name': "LE270-EU",
+        'bands': {'FDD': ["B1","B3","B5","B7","B8","B20","B28"], 'TDD': ["B38","B40","B41"]},
+        'has_gsm': False,
+        'region': "欧洲",
+        'note': "欧洲区域模块"
+    },
+    'LE270-GL': {
+        'name': "LE270-GL",
+        'bands': {'FDD': ["B1","B2","B3","B4","B5","B7","B8","B12","B13","B14","B17","B18","B19","B20","B25","B26","B28","B66"], 'TDD': ["B34","B38","B39","B40","B41"]},
+        'has_gsm': False,
+        'region': "全球",
+        'note': "全球区域模块"
     },
     'L610-CN': {
-        'name': 'L610-CN',
-        'short_name': 'L610-CN',
-        'bands': {'FDD': ['B1', 'B3', 'B5', 'B8'], 'TDD': ['B34', 'B39', 'B40', 'B41']},
+        'name': "L610-CN",
+        'bands': {'FDD': ["B1","B3","B5","B8"], 'TDD': ["B34","B39","B40","B41"]},
         'has_gsm': False,
-        'priority': 95,
-        'region': '亚太/中东/非洲/大洋洲',
-        'note': '不支持GSM，适合亚太地区',
-        'projects': ['WD-325B']
+        'region': "亚太",
+        'note': "亚太区域模块"
     },
-    'EU': {
-        'name': 'L610-EU (支持GSM) / LE270-EU (不支持GSM)',
-        'short_name': 'EU版',
-        'bands': {'FDD': ['B1', 'B3', 'B7', 'B8', 'B20', 'B28']},
+    'L610-EU': {
+        'name': "L610-EU",
+        'bands': {'FDD': ["B1","B3","B7","B8","B20","B28"], 'TDD': []},
         'has_gsm': True,
-        'priority': 90,
-        'region': '欧洲/东欧/中东/非洲',
-        'note': 'L610-EU额外支持GSM',
-        'projects': {'L610-EU': ['WD-325B'], 'LE270-EU': ['WD-300', 'WD-210', 'WD-219K']}
+        'region': "欧洲",
+        'note': "欧洲区域模块"
     },
-    'LA': {
-        'name': 'L610-LA',
-        'short_name': 'LA拉美版',
-        'bands': {'FDD': ['B1', 'B2', 'B3', 'B4', 'B5', 'B7', 'B8', 'B28', 'B66'], 'TDD': ['B38', 'B40', 'B41']},
+    'L610-LA': {
+        'name': "L610-LA",
+        'bands': {'FDD': ["B1","B2","B3","B4","B5","B7","B8","B28","B66"], 'TDD': []},
         'has_gsm': True,
-        'priority': 85,
-        'region': '北美/拉丁美洲',
-        'note': '支持GSM四频，适合北美和拉美',
-        'projects': ['WD-325B']
+        'region': "拉美",
+        'note': "拉美区域模块"
     },
-    'GL': {
-        'name': 'LE271-GL',
-        'short_name': 'GL全球版',
-        'bands': {'FDD': ['B1','B2','B3','B4','B5','B7','B8','B12','B13','B14','B17','B18','B19','B20','B25','B26','B28','B66'],
-                  'TDD': ['B34','B38','B39','B40','B41']},
+    'ML307N-DC-DL': {
+        'name': "ML307N-DC/DL",
+        'bands': {'FDD': ["B1","B3","B5","B8"], 'TDD': ["B34","B38","B39","B40","B41"]},
         'has_gsm': False,
-        'priority': 80,
-        'region': '全球',
-        'note': '全球频段覆盖最广，成本较高',
-        'projects': ['WD-300', 'WD-210', 'WD-219K']
-    }
+        'region': "亚太",
+        'note': "亚太区域模块"
+    },
+}
+
+PRODUCTS_DB = {
+    'WD-219G': {
+        'category': "共享产品",
+        'modules': ["MC669-CN"]
+    },
+    'WD-210': {
+        'category': "共享产品",
+        'modules': ["LE270-CN","LE270-EU","LE270-GL"]
+    },
+    'WD-219K': {
+        'category': "共享产品",
+        'modules': ["LE270-CN","LE270-EU","LE270-GL"]
+    },
+    'WD-325': {
+        'category': "两轮产品",
+        'modules': ["L610-CN","L610-EU","L610-LA"]
+    },
+    'WD-300': {
+        'category': "两轮产品",
+        'modules': ["LE270-CN","LE270-EU","LE270-GL"]
+    },
+    'WD-110': {
+        'category': "两轮产品",
+        'modules': ["ML307N-DC-DL"]
+    },
+    'WD-281': {
+        'category': "两轮产品",
+        'modules': ["ML307N-DC-DL"]
+    },
+    'WD-282': {
+        'category': "两轮产品",
+        'modules': ["ML307N-DC-DL"]
+    },
+    'WD-280D': {
+        'category': "两轮产品",
+        'modules': ["ML307N-DC-DL"]
+    },
 }
 
 
@@ -107,91 +152,144 @@ def parse_bands_str(bands_str):
     return result
 
 
-def auto_match_modules(country_bands):
-    """
-    自动判断一个国家的4G频段可以被哪些模块支持。
-    
-    匹配规则：模块的 FDD+TDD 频段集合 必须包含 该国的 FDD+TDD 频段的至少一部分
-    （即有交集就认为该模块可用，让前端排序逻辑决定优先级）
-    """
-    matched = {}
-    
-    # 收集国家所有LTE频段
+def get_adaptation_level(module_info, country_bands):
+    """计算模块对某国家的适配等级"""
+    if not module_info.get('bands') or not country_bands:
+        return {'grade': 'D', 'label': 'D 不推荐', 'pct': 0, 'detail': '无数据'}
+
     country_lte = set()
-    for band in country_bands.get('FDD', []):
-        country_lte.add(band)
-    for band in country_bands.get('TDD', []):
-        country_lte.add(band)
-    
-    # 如果国家没有任何LTE频段，跳过
+    for b in country_bands.get('FDD', []):
+        country_lte.add(b)
+    for b in country_bands.get('TDD', []):
+        country_lte.add(b)
+
+    module_lte = set()
+    for b in module_info['bands'].get('FDD', []):
+        module_lte.add(b)
+    for b in module_info['bands'].get('TDD', []):
+        module_lte.add(b)
+
     if not country_lte:
-        return matched
-    
-    for module_key, module_info in MODULES.items():
-        module_lte = set()
-        for band in module_info['bands'].get('FDD', []):
-            module_lte.add(band)
-        for band in module_info['bands'].get('TDD', []):
-            module_lte.add(band)
-        
-        # 如果模块和国家有至少一个共同频段，则该模块可用
-        if country_lte & module_lte:  # 交集非空
-            matched[module_key] = module_info
-    
-    return matched
+        return {'grade': 'A', 'label': 'A 高度适配', 'pct': 100, 'detail': '100%'}
+
+    covered = len(country_lte & module_lte)
+    total = len(country_lte)
+    pct = round(covered / total * 100)
+    has_gsm = module_info.get('has_gsm', False)
+
+    if pct == 100 and has_gsm:
+        return {'grade': 'S', 'label': 'S 完美适配', 'pct': pct, 'detail': '100%覆盖+GSM'}
+    if pct == 100:
+        return {'grade': 'A+', 'label': 'A+ 极佳适配', 'pct': pct, 'detail': '100%覆盖'}
+    if pct >= 80 and has_gsm:
+        return {'grade': 'A', 'label': 'A 高度适配', 'pct': pct, 'detail': f'{pct}%+GSM'}
+    if pct >= 80 or (pct >= 60 and has_gsm):
+        return {'grade': 'B+', 'label': 'B+ 良好适配', 'pct': pct, 'detail': f'{pct}%' + ('+GSM' if has_gsm else '')}
+    if pct >= 40:
+        return {'grade': 'B', 'label': 'B 基本可用', 'pct': pct, 'detail': f'{pct}%'}
+    if pct >= 1:
+        return {'grade': 'C', 'label': 'C 勉强可用', 'pct': pct, 'detail': f'{pct}%'}
+    return {'grade': 'D', 'label': 'D 不推荐', 'pct': 0, 'detail': '无覆盖'}
+
+
+def match_product_to_country(product_name, product_info, country_bands):
+    """计算一个产品在某国家的最佳适配方案"""
+    best_module = None
+    best_adapt = None
+    best_pct = -1
+
+    for mod_key in product_info.get('modules', []):
+        if mod_key not in MODULES:
+            continue
+        mod_info = MODULES[mod_key]
+        adapt = get_adaptation_level(mod_info, country_bands)
+        if adapt['pct'] > best_pct:
+            best_pct = adapt['pct']
+            best_module = mod_key
+            best_adapt = adapt
+
+    if best_module is None or best_pct == 0:
+        return None
+
+    return {
+        'product': product_name,
+        'category': product_info['category'],
+        'module_key': best_module,
+        'module_info': MODULES[best_module],
+        'all_modules': product_info['modules'],
+        'adapt': best_adapt
+    }
+
+
+def auto_match_country(country_bands):
+    """对一个国家，匹配所有产品，按类别和适配等级排序"""
+    grade_order = {'S': 0, 'A+': 1, 'A': 2, 'B+': 3, 'B': 4, 'C': 5, 'D': 6}
+    result = {'共享产品': [], '两轮产品': []}
+
+    for product_name, product_info in PRODUCTS_DB.items():
+        match = match_product_to_country(product_name, product_info, country_bands)
+        if match:
+            cat = product_info['category']
+            result[cat].append(match)
+
+    for cat in result:
+        result[cat].sort(key=lambda x: (grade_order.get(x['adapt']['grade'], 9), -x['adapt']['pct']))
+
+    return result
 
 
 def build():
-    # 1. 读取数据源（新格式：扁平国家列表）
+    # 1. 读取国家数据
     if not os.path.exists(DATA_FILE):
         print("❌ 找不到数据文件：" + DATA_FILE)
         return False
-    
+
     with open(DATA_FILE, 'r', encoding='utf-8') as f:
         raw_data = json.load(f)
-    
+
     countries_raw = raw_data.get('countries', [])
     print(f"✅ 从 {os.path.basename(DATA_FILE)} 读取 {len(countries_raw)} 个国家")
 
-    # 2. 构建国家数据库（自动匹配模块）
+    # 2. 构建国家数据库（按产品匹配）
     countries_db = []
-    
+
     for country_info in countries_raw:
         name = country_info[0]
-        
+        bands = parse_bands_str(country_info[2]) if len(country_info) > 2 else {}
+
         record = {
             'name': name,
             'region': country_info[1] if len(country_info) > 1 else '',
-            'bands': parse_bands_str(country_info[2]) if len(country_info) > 2 else {},
+            'bands': bands,
             'assessment': country_info[3] if len(country_info) > 3 else '',
-            'supported_by': [],
-            'modules_available': {}
+            'product_matches': auto_match_country(bands)
         }
-        
-        # ★ 核心改动：自动匹配模块，不再依赖手动分配
-        matched = auto_match_modules(record['bands'])
-        record['modules_available'] = matched
-        record['supported_by'] = list(matched.keys())
-        
         countries_db.append(record)
 
     # 按国家名排序
     countries_db.sort(key=lambda x: x['name'])
 
-    # 3. 统计匹配情况
-    total_matches = sum(len(c['supported_by']) for c in countries_db)
-    print(f"📊 自动匹配完成：共 {total_matches} 条国家-模块关联")
+    # 统计
+    total = sum(
+        len(c['product_matches']['共享产品']) + len(c['product_matches']['两轮产品'])
+        for c in countries_db
+    )
+    print(f"📊 匹配完成：共 {total} 条国家-产品关联")
 
-    # 4. 读取模板并替换占位符
+    # 3. 读取模板并替换占位符
     with open(TEMPLATE_FILE, 'r', encoding='utf-8') as f:
         template = f.read()
 
     modules_json = json.dumps(MODULES, ensure_ascii=False)
+    products_json = json.dumps(PRODUCTS_DB, ensure_ascii=False)
     countries_json = json.dumps(countries_db, ensure_ascii=False)
 
     html_content = template.replace(
         '{{MODULES_PLACEHOLDER}}',
         'const MODULE_DB = ' + modules_json + ';'
+    ).replace(
+        '{{PRODUCTS_PLACEHOLDER}}',
+        'const PRODUCTS_DB = ' + products_json + ';'
     ).replace(
         '{{COUNTRIES_PLACEHOLDER}}',
         'const COUNTRY_DB = ' + countries_json + ';'
@@ -204,9 +302,13 @@ def build():
     print(f'   📄 输出: {OUTPUT_FILE}')
     print(f'   🌍 国家: {len(countries_db)} 个')
     print(f'   📦 模块: {len(MODULES)} 种')
+    print(f'   🛠️  产品: {len(PRODUCTS_DB)} 种')
     print(f'   📏 大小: {os.path.getsize(OUTPUT_FILE) / 1024:.1f} KB')
     print(f'\n💡 双击 index.html 即可打开使用！')
+    return True
 
 
 if __name__ == '__main__':
     build()
+    # 暂停，让用户看到结果（双击运行时不会一闪而过）
+    input('\n按回车键退出...')
